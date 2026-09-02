@@ -1,0 +1,65 @@
+<%# locals: (entry:, transaction:, preview: false) %>
+<div class="hidden lg:grid w-full grid-cols-[minmax(0,1fr)_1.5rem_1.5rem_1.5rem] items-center gap-1 pr-[0.2rem] text-secondary">
+  <div class="flex min-w-0 flex-wrap items-center gap-1">
+    <% if preview || transaction.one_time? %>
+      <span class="text-warning" title="<%= t("transactions.show.one_time_title", type: t(entry.amount.negative? ? "transactions.form.income" : "transactions.form.expense")) %>"><%= icon "asterisk", size: "sm", color: "current" %></span>
+    <% end %>
+    <% if preview || transaction.pending? %>
+      <%= render DS::Pill.new(label: t("transactions.transaction.pending"), tone: :neutral, marker: false, icon: "clock", title: t("transactions.transaction.pending_tooltip")) %>
+    <% end %>
+    <% if preview || transaction.has_potential_duplicate? %>
+      <%= render DS::Pill.new(label: t("transactions.transaction.possible_duplicate"), tone: :warning, marker: false, icon: "alert-triangle", title: t("transactions.transaction.potential_duplicate_tooltip")) %>
+    <% end %>
+    <% if preview || entry.split_parent? %>
+      <%= render DS::Pill.new(label: t("transactions.transaction.split"), tone: :neutral, marker: false, icon: "split", title: t("transactions.transaction.split_tooltip")) %>
+    <% end %>
+    <%= render "transactions/transfer_match", transaction: transaction if preview || transaction.transfer.present? %>
+  </div>
+
+  <div class="flex size-6 items-center justify-center justify-self-center">
+    <% if preview || transaction.tags.any? %>
+      <% tags_tooltip_id = dom_id(entry, "tags-tooltip") %>
+      <span data-controller="DS--tooltip" data-DS--tooltip-placement-value="left" data-DS--tooltip-offset-value="10" class="inline-flex">
+        <button type="button" class="inline-flex size-5 items-center justify-center rounded focus-ring" aria-describedby="<%= tags_tooltip_id %>">
+        <span class="grid grid-cols-2 gap-0.5">
+          <% (preview ? [nil, nil, nil, nil] : transaction.tags.first(4)).each do |tag| %>
+            <span class="size-1.5 rounded-full" style="background-color: <%= tag&.color.presence || "var(--color-primary)" %>"></span>
+          <% end %>
+        </span>
+        </button>
+        <div role="tooltip" id="<%= tags_tooltip_id %>" data-DS--tooltip-target="tooltip" class="hidden absolute z-50 rounded-xl bg-surface px-3 py-2 text-sm shadow-lg">
+          <div class="relative space-y-1.5 font-medium text-primary">
+            <% if preview %>
+              <%= t("transactions.form.tags_label") %>
+            <% else %>
+              <% transaction.tags.each do |tag| %>
+                <div class="flex items-center gap-2 whitespace-nowrap">
+                  <span class="size-3 shrink-0 rounded-full" style="background-color: <%= tag.color.presence || Tag::UNCATEGORIZED_COLOR %>"></span>
+                  <span><%= tag.name %></span>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </span>
+    <% end %>
+  </div>
+
+  <div class="flex size-6 items-center justify-center justify-self-center">
+    <% if preview || entry.notes.present? %>
+      <% notes_tooltip_id = dom_id(entry, "notes-tooltip") %>
+      <span data-controller="DS--tooltip" data-DS--tooltip-placement-value="top" data-DS--tooltip-offset-value="10" class="inline-flex">
+        <button type="button" class="inline-flex size-5 items-center justify-center rounded focus-ring" aria-describedby="<%= notes_tooltip_id %>"><%= icon "message-square-text", size: "sm", color: "current" %></button>
+        <div role="tooltip" id="<%= notes_tooltip_id %>" data-DS--tooltip-target="tooltip" class="hidden absolute z-50 max-w-[20rem] rounded-xl bg-surface px-3 py-2 text-sm shadow-lg">
+          <div class="relative whitespace-pre-wrap font-medium text-primary"><%= preview ? t("transactions.show.note_label") : entry.notes.truncate(200) %></div>
+        </div>
+      </span>
+    <% end %>
+  </div>
+
+  <div class="flex size-6 items-center justify-center justify-self-center">
+    <% if preview || entry.external_id.present? || entry.source.present? %>
+      <span title="<%= t("transactions.status.synced", default: "已同步") %>"><%= icon "refresh-ccw", size: "sm", color: "current" %></span>
+    <% end %>
+  </div>
+</div>

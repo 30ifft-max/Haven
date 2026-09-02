@@ -234,6 +234,21 @@ en:
       drag_drop_subtitle: Upload transactions directly
       transaction: transaction
       transactions: transactions
+      transaction_name: Transaction
+      status: Status
+      merchant: Merchant
+      account: Account
+      amount_currency: Amount & Currency
+      amount: Amount
+      currency: Currency
+      currency_symbol: Currency Symbol
+      status_label: Status label
+      tag_logo: Tag logo
+      note_logo: Note logo
+      lock_marker: Lock marker
+      select: Select
+    status:
+      synced: Synced
     toggle_recurring_section: Toggle upcoming recurring transactions
     search:
       filters:

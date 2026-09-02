@@ -1,4 +1,4 @@
-<div class="space-y-4 pb-6 lg:pb-12 flex flex-col">
+<div class="space-y-4 pb-6 lg:pb-12 flex flex-col [&_turbo-frame:focus]:outline-none [&_turbo-frame:focus]:ring-0 [&_turbo-frame:focus-visible]:outline-none [&_turbo-frame:focus-visible]:ring-0" data-controller="overview-toggle checkbox-toggle">
   <header class="flex justify-between items-center text-primary font-medium">
     <h1 class="text-xl"><%= t(".title") %></h1>
     <div class="flex items-center gap-5">
@@ -46,19 +46,33 @@
     </div>
   </header>
 
-  <%= render "summary", totals: @search.totals %>
+  <div class="flex items-center justify-between gap-3">
+    <%= render "transactions/searches/search" %>
+    <%= render DS::Button.new(id: "transaction-summary-button", text: t("transactions.show.summary", default: "概览"), type: "button", variant: "outline", icon: "chart-no-axes-column", aria: { controls: "transaction-summary", expanded: "false" }, data: { action: "overview-toggle#toggle", overview_toggle_target: "button" }) %>
+  </div>
+
+  <div id="transaction-summary" class="hidden" data-overview-toggle-target="panel">
+    <%= render "summary", totals: @search.totals %>
+  </div>
   <% if Current.family.recurring_transactions_disabled? %>
     <%= render "transactions/list", transactions: @transactions, projected_recurring: @projected_recurring, q: params[:q], pagy: @pagy %>
+    <div class="pt-2">
+      <%= render "shared/pagination", pagy: @pagy %>
+    </div>
   <% else %>
-    <%= render DS::Tabs.new(active_tab: params[:tab].presence || "transactions") do |tabs| %>
-      <% tabs.with_nav(classes: "max-w-fit") do |nav| %>
-        <% nav.with_btn(id: "transactions", label: t("transactions.show.tab_transactions"), classes: "px-6") %>
-        <% nav.with_btn(id: "upcoming", label: t("transactions.show.tab_upcoming"), classes: "px-6") %>
+    <div class="[&_[role=tabpanel]:focus]:outline-none [&_[role=tabpanel]:focus]:ring-0">
+      <%= render DS::Tabs.new(active_tab: params[:tab].presence || "transactions") do |tabs| %>
+      <% tabs.with_nav(classes: "max-w-fit whitespace-nowrap") do |nav| %>
+        <% nav.with_btn(id: "transactions", label: t("transactions.show.tab_transactions"), classes: "px-6 whitespace-nowrap") %>
+        <% nav.with_btn(id: "upcoming", label: t("transactions.show.tab_upcoming"), classes: "px-6 whitespace-nowrap") %>
       <% end %>
 
       <% tabs.with_panel(tab_id: "transactions") do %>
-        <div class="bg-container rounded-xl shadow-border-xs">
+        <div class="bg-container rounded-xl shadow-border-xs focus:outline-none focus:ring-0 focus-within:outline-none focus-within:ring-0">
           <%= render "transactions/list", transactions: @transactions, projected_recurring: @projected_recurring, q: params[:q], pagy: @pagy %>
+        </div>
+        <div class="pt-2">
+          <%= render "shared/pagination", pagy: @pagy %>
         </div>
       <% end %>
 
@@ -67,6 +81,7 @@
           <%= render "transactions/upcoming" %>
         </div>
       <% end %>
-    <% end %>
+      <% end %>
+    </div>
   <% end %>
 </div>

@@ -210,6 +210,21 @@ zh-CN:
       drag_drop_subtitle: 直接上传交易
       transaction: 交易
       transactions: 交易
+      transaction_name: 交易名称
+      status: 状态
+      merchant: 商户
+      account: 账户
+      amount_currency: 金额及币种
+      amount: 金额
+      currency: 币种
+      currency_symbol: 货币符号
+      status_label: 状态标签
+      tag_logo: 标签 Logo
+      note_logo: 备注 Logo
+      lock_marker: 锁定标记
+      select: 选择
+    status:
+      synced: 已同步
     toggle_recurring_section: 切换待发生循环交易
     search:
       filters:
