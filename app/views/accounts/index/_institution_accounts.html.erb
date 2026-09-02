@@ -1,0 +1,30 @@
+<%# locals: (accounts:) %>
+<% grouped_accounts = accounts.group_by { |account| account.institution_name.presence || t("accounts.index.no_institution") } %>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+  <% grouped_accounts.sort_by { |institution, _| institution }.each do |institution, institution_accounts| %>
+    <section class="bg-container-inset p-1 rounded-xl">
+      <div class="flex items-center px-4 py-3 text-sm font-medium text-primary">
+        <span><%= institution %> <span class="text-secondary">· <%= institution_accounts.count %></span></span>
+        <span class="ml-auto privacy-sensitive"><%= totals_by_currency(collection: institution_accounts, money_method: :balance_money) %></span>
+      </div>
+      <div class="bg-container rounded-lg shadow-border-xs overflow-hidden p-3 space-y-3">
+        <% [ "asset", "liability" ].each do |classification| %>
+          <% classification_accounts = institution_accounts.select { |account| account.classification == classification } %>
+          <% next if classification_accounts.empty? %>
+          <div>
+            <p class="px-1 pb-1 text-xs font-medium text-secondary"><%= t("accounts.index.#{classification}_accounts") %></p>
+            <% classification_accounts.group_by(&:accountable_type).sort_by { |type, _| type }.each do |accountable_type, type_accounts| %>
+              <div class="bg-container-inset rounded-lg overflow-hidden">
+                <% type_accounts.each_with_index do |account, index| %>
+                  <%= render "accounts/account", account: account, show_institution: false %>
+                  <% unless index == type_accounts.length - 1 %><%= render "shared/ruler" %><% end %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</div>

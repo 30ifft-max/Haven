@@ -1,4 +1,5 @@
 <%= content_for :page_title, t(".accounts") %>
+<%= content_for :settings_content_width, "max-w-7xl" %>
 <%= content_for :page_actions do %>
   <%= render "accounts/sync_controls", family: Current.family %>
   <%= render DS::Link.new(
@@ -102,7 +103,18 @@
 
     <% if @manual_accounts.any? %>
       <div id="manual-accounts">
-        <%= render "accounts/index/manual_accounts", accounts: @manual_accounts %>
+        <%= render DS::Tabs.new(active_tab: params[:view].presence || "categories") do |tabs| %>
+          <% tabs.with_nav(classes: "max-w-fit") do |nav| %>
+            <% nav.with_btn(id: "categories", label: t("accounts.index.view_by_category"), classes: "px-4") %>
+            <% nav.with_btn(id: "institutions", label: t("accounts.index.view_by_institution"), classes: "px-4") %>
+          <% end %>
+          <% tabs.with_panel(tab_id: "categories") do %>
+            <%= render "accounts/index/manual_accounts", accounts: @manual_accounts %>
+          <% end %>
+          <% tabs.with_panel(tab_id: "institutions") do %>
+            <%= render "accounts/index/institution_accounts", accounts: @manual_accounts %>
+          <% end %>
+        <% end %>
       </div>
     <% else %>
       <div id="manual-accounts"></div>

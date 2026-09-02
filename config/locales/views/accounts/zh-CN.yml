@@ -49,8 +49,13 @@ zh-CN:
       notes_placeholder: 存储其他信息，例如账号、排序码、IBAN、路由号码等。
     index:
       accounts: 账户
+      view_by_category: 按账户类别
+      view_by_institution: 按金融机构
+      no_institution: 未设置金融机构
       manual_accounts:
-        other_accounts: 其他账户
+        asset_accounts: 资产账户
+        liability_accounts: 负债账户
+        no_accounts: 暂无此类账户
       new_account: 新建账户
       sync: 全部同步
     sync_all:

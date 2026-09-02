@@ -1,13 +1,11 @@
-<%# locals: (account:, return_to: nil) %>
+<%# locals: (account:, return_to: nil, show_institution: true) %>
 
 <% is_default = Current.user&.default_account_id == account.id %>
 
 <%= turbo_frame_tag dom_id(account) do %>
-  <div class="relative p-4 flex items-center justify-between gap-3 group/account hover:bg-surface-hover">
-    <div class="flex items-center gap-3">
-      <%= render "accounts/logo", account: account, size: "md" %>
-
-      <div>
+  <div class="relative p-3 flex items-center justify-between gap-3 group/account hover:bg-surface-hover">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="min-w-0">
         <% if account.pending_deletion? %>
           <p class="text-sm font-medium text-primary">
             <span>
@@ -31,18 +29,12 @@
               <%= icon("users", class: "w-3.5 h-3.5 text-secondary", title: account.owned_by?(Current.user) ? nil : account.owner&.display_name) %>
             <% end %>
 
-            <% if account.institution_name.present? %>
+            <% if show_institution && account.institution_name.present? %>
               <span class="hidden sm:inline text-secondary">• <%= account.institution_name %></span>
             <% end %>
           </div>
-          <% if account.long_subtype_label %>
-            <p class="text-sm text-secondary truncate"><%= account.long_subtype_label %></p>
-          <% end %>
           <% if account.supports_default? && is_default %>
             <p class="text-xs text-secondary opacity-50"><%= t("accounts.account.default_label") %></p>
-          <% end %>
-          <% if account.institution_name.present? %>
-            <p class="sm:hidden text-sm text-secondary truncate"><%= account.institution_name %></p>
           <% end %>
         <% end %>
       </div>

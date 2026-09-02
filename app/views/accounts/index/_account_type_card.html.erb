@@ -1,0 +1,22 @@
+<%# locals: (accountable_type:, accounts:) %>
+<% accountable = Accountable.from_type(accountable_type) %>
+<div class="bg-container-inset p-1 rounded-xl">
+  <div class="flex items-center px-4 py-2 text-xs font-medium text-secondary">
+    <p><%= accountable.display_name %></p>
+    <span class="text-subdued mx-2">&middot;</span>
+    <p><%= accounts.count %></p>
+    <p class="ml-auto privacy-sensitive"><%= accounts.any? ? totals_by_currency(collection: accounts, money_method: :balance_money) : format_money(Money.new(0, Current.family.currency)) %></p>
+  </div>
+  <% if accounts.any? %>
+    <div class="bg-container rounded-lg shadow-border-xs overflow-hidden">
+      <% accounts.each_with_index do |account, index| %>
+        <%= render "accounts/account", account: account %>
+        <% unless index == accounts.count - 1 %><%= render "shared/ruler" %><% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-container rounded-lg shadow-border-xs px-4 py-6 text-center text-sm text-secondary">
+      <%= t("accounts.index.manual_accounts.no_accounts") %>
+    </div>
+  <% end %>
+</div>

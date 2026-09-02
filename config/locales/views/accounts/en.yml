@@ -55,9 +55,14 @@ en:
       enable_category_matcher_hint: When enabled, the provider's suggested category is applied to imported transactions. Disable to leave new transactions uncategorized.
     index:
       accounts: Accounts
+      view_by_category: By account type
+      view_by_institution: By institution
+      no_institution: No institution
       cancel_sync: Cancel sync
       manual_accounts:
-        other_accounts: Other accounts
+        asset_accounts: Assets
+        liability_accounts: Liabilities
+        no_accounts: No accounts of this type
       new_account: New account
       sync: Sync all
     sync_all:
