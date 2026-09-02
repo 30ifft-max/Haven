@@ -120,6 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.uuid "simplefin_account_id"
     t.string "status", default: "active"
     t.string "subtype"
+    t.decimal "trade_fee_rate", precision: 10, scale: 6
     t.datetime "updated_at", null: false
     t.index ["accountable_id", "accountable_type"], name: "index_accounts_on_accountable_id_and_accountable_type"
     t.index ["accountable_type"], name: "index_accounts_on_accountable_type"
@@ -428,6 +429,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["user_id"], name: "index_chats_on_user_id"
   end
 
+  create_table "closed_positions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.date "closed_on", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", null: false
+    t.integer "holding_days", null: false
+    t.decimal "net_profit", precision: 19, scale: 8, null: false
+    t.text "notes"
+    t.date "opened_on", null: false
+    t.decimal "return_pct", precision: 10, scale: 4
+    t.uuid "security_id", null: false
+    t.decimal "total_fees", precision: 19, scale: 8, default: "0.0", null: false
+    t.decimal "total_invested", precision: 19, scale: 8, null: false
+    t.decimal "total_proceeds", precision: 19, scale: 8, null: false
+    t.decimal "total_qty", precision: 24, scale: 8, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "security_id", "closed_on"], name: "idx_on_account_id_security_id_closed_on_eda8a5de1d"
+    t.index ["account_id"], name: "index_closed_positions_on_account_id"
+    t.index ["security_id"], name: "index_closed_positions_on_security_id"
+  end
+
   create_table "coinbase_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "account_id"
     t.string "account_status"
@@ -580,6 +602,44 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "derivative_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.string "asset_symbol", null: false
+    t.decimal "close_spot_price", precision: 19, scale: 8
+    t.date "closed_on"
+    t.datetime "created_at", null: false
+    t.decimal "initial_amount", precision: 24, scale: 8, null: false
+    t.string "initial_currency", null: false
+    t.text "notes"
+    t.string "purpose", null: false
+    t.string "quote_symbol", null: false
+    t.decimal "start_spot_price", precision: 19, scale: 8, null: false
+    t.date "started_on", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_derivative_batches_on_account_id"
+  end
+
+  create_table "derivative_rounds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "apy", precision: 10, scale: 4
+    t.datetime "created_at", null: false
+    t.uuid "derivative_batch_id", null: false
+    t.string "direction", null: false
+    t.date "expires_on", null: false
+    t.decimal "invested_amount", precision: 24, scale: 8, null: false
+    t.string "invested_currency", null: false
+    t.text "notes"
+    t.integer "position", null: false
+    t.decimal "received_amount", precision: 24, scale: 8
+    t.string "received_currency"
+    t.date "settled_on"
+    t.date "start_on", null: false
+    t.decimal "strike_price", precision: 19, scale: 8, null: false
+    t.datetime "updated_at", null: false
+    t.index ["derivative_batch_id", "position"], name: "index_derivative_rounds_on_derivative_batch_id_and_position", unique: true
+    t.index ["derivative_batch_id"], name: "index_derivative_rounds_on_derivative_batch_id"
+  end
+
   create_table "enable_banking_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "account_id"
     t.string "account_status"
@@ -637,6 +697,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.datetime "updated_at", null: false
     t.index ["family_id"], name: "index_enable_banking_items_on_family_id"
     t.index ["status"], name: "index_enable_banking_items_on_status"
+  end
+
+  create_table "entitlements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.decimal "amount", precision: 19, scale: 4
+    t.text "benefits"
+    t.string "billing_cycle", default: "monthly", null: false
+    t.string "category", default: "other", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "USD", null: false
+    t.date "expires_on"
+    t.uuid "family_id", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.uuid "source_entry_id"
+    t.date "starts_on"
+    t.datetime "updated_at", null: false
+    t.index ["family_id", "expires_on"], name: "index_entitlements_on_family_id_and_expires_on"
+    t.index ["family_id"], name: "index_entitlements_on_family_id"
+    t.index ["source_entry_id"], name: "index_entitlements_on_source_entry_id"
   end
 
   create_table "entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -798,6 +878,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.boolean "recurring_transactions_disabled", default: false, null: false
     t.string "stripe_customer_id"
     t.string "timezone"
+    t.string "trade_benchmark_ticker"
+    t.decimal "trade_risk_free_rate", precision: 8, scale: 4
     t.datetime "updated_at", null: false
     t.string "vector_store_id"
     t.index ["bills_feed_token"], name: "index_families_on_bills_feed_token", unique: true
@@ -837,6 +919,180 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["family_id", "merchant_id"], name: "idx_on_family_id_merchant_id_23e883e08f", unique: true
     t.index ["family_id"], name: "index_family_merchant_associations_on_family_id"
     t.index ["merchant_id"], name: "index_family_merchant_associations_on_merchant_id"
+  end
+
+  create_table "fft_derivative_allocations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "amount_delta", precision: 24, scale: 8, null: false
+    t.datetime "created_at", null: false
+    t.uuid "derivative_batch_id", null: false
+    t.uuid "derivative_round_id"
+    t.string "event_key", null: false
+    t.string "event_type", null: false
+    t.date "occurred_on", null: false
+    t.uuid "security_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["derivative_batch_id"], name: "index_fft_derivative_allocations_on_derivative_batch_id"
+    t.index ["derivative_round_id"], name: "index_fft_derivative_allocations_on_derivative_round_id"
+    t.index ["event_key"], name: "idx_fft_derivative_allocations_event_key", unique: true
+    t.index ["security_id"], name: "index_fft_derivative_allocations_on_security_id"
+    t.check_constraint "(event_type::text = ANY (ARRAY['initial_lock'::character varying::text, 'close_release'::character varying::text])) AND derivative_round_id IS NULL OR (event_type::text = ANY (ARRAY['pending_lock'::character varying::text, 'settlement_release'::character varying::text, 'settlement_relock'::character varying::text])) AND derivative_round_id IS NOT NULL", name: "chk_fft_derivative_allocations_round"
+    t.check_constraint "(event_type::text = ANY (ARRAY['initial_lock'::character varying::text, 'pending_lock'::character varying::text, 'settlement_relock'::character varying::text])) AND amount_delta > 0::numeric OR (event_type::text = ANY (ARRAY['settlement_release'::character varying::text, 'close_release'::character varying::text])) AND amount_delta < 0::numeric", name: "chk_fft_derivative_allocations_sign"
+    t.check_constraint "event_type::text = ANY (ARRAY['initial_lock'::character varying::text, 'pending_lock'::character varying::text, 'settlement_release'::character varying::text, 'settlement_relock'::character varying::text, 'close_release'::character varying::text])", name: "chk_fft_derivative_allocations_event_type"
+  end
+
+  create_table "fft_derivative_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.uuid "asset_security_id", null: false
+    t.date "closed_on"
+    t.datetime "created_at", null: false
+    t.decimal "initial_amount", precision: 24, scale: 8, null: false
+    t.string "initial_leg", null: false
+    t.string "ledger_currency", null: false
+    t.text "notes"
+    t.string "purpose", null: false
+    t.uuid "quote_security_id", null: false
+    t.decimal "start_spot_price", precision: 19, scale: 10, null: false
+    t.date "started_on", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_fft_derivative_batches_on_account_id"
+    t.index ["asset_security_id"], name: "index_fft_derivative_batches_on_asset_security_id"
+    t.index ["quote_security_id"], name: "index_fft_derivative_batches_on_quote_security_id"
+    t.check_constraint "asset_security_id <> quote_security_id", name: "chk_fft_derivative_batches_distinct_legs"
+    t.check_constraint "initial_amount > 0::numeric", name: "chk_fft_derivative_batches_initial_amount"
+    t.check_constraint "initial_leg::text = ANY (ARRAY['asset'::character varying::text, 'quote'::character varying::text])", name: "chk_fft_derivative_batches_initial_leg"
+    t.check_constraint "purpose::text = ANY (ARRAY['accumulate'::character varying::text, 'cashflow'::character varying::text])", name: "chk_fft_derivative_batches_purpose"
+    t.check_constraint "start_spot_price > 0::numeric", name: "chk_fft_derivative_batches_start_spot"
+    t.check_constraint "status::text = 'active'::text AND closed_on IS NULL OR status::text = 'closed'::text AND closed_on IS NOT NULL", name: "chk_fft_derivative_batches_status"
+  end
+
+  create_table "fft_derivative_ledger_links", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "derivative_round_id", null: false
+    t.uuid "entry_id", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.index ["derivative_round_id", "role"], name: "idx_fft_derivative_links_round_role", unique: true
+    t.index ["derivative_round_id"], name: "index_fft_derivative_ledger_links_on_derivative_round_id"
+    t.index ["entry_id"], name: "idx_fft_derivative_links_entry", unique: true
+    t.index ["entry_id"], name: "index_fft_derivative_ledger_links_on_entry_id"
+    t.check_constraint "role::text = ANY (ARRAY['principal_disposition'::character varying::text, 'principal_acquisition'::character varying::text, 'yield_reinvestment'::character varying::text, 'yield_income'::character varying::text])", name: "chk_fft_derivative_ledger_links_role"
+  end
+
+  create_table "fft_derivative_rounds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "apy", precision: 12, scale: 6
+    t.datetime "created_at", null: false
+    t.uuid "derivative_batch_id", null: false
+    t.string "direction", null: false
+    t.date "expires_on", null: false
+    t.decimal "invested_amount", precision: 24, scale: 8, null: false
+    t.text "notes"
+    t.integer "position", null: false
+    t.decimal "quote_to_ledger_rate", precision: 19, scale: 10
+    t.decimal "received_amount", precision: 24, scale: 8
+    t.string "received_leg"
+    t.boolean "received_relocked"
+    t.date "settled_on"
+    t.string "settlement_key"
+    t.date "start_on", null: false
+    t.string "status", default: "pending", null: false
+    t.decimal "strike_price", precision: 19, scale: 10, null: false
+    t.datetime "updated_at", null: false
+    t.index ["derivative_batch_id", "position"], name: "idx_fft_derivative_rounds_batch_position", unique: true
+    t.index ["derivative_batch_id"], name: "index_fft_derivative_rounds_on_derivative_batch_id"
+    t.index ["settlement_key"], name: "idx_fft_derivative_rounds_settlement_key", unique: true, where: "(settlement_key IS NOT NULL)"
+    t.check_constraint "apy IS NULL OR apy >= 0::numeric", name: "chk_fft_derivative_rounds_apy"
+    t.check_constraint "direction::text = ANY (ARRAY['sell_high'::character varying::text, 'buy_low'::character varying::text])", name: "chk_fft_derivative_rounds_direction"
+    t.check_constraint "expires_on >= start_on", name: "chk_fft_derivative_rounds_dates"
+    t.check_constraint "invested_amount > 0::numeric", name: "chk_fft_derivative_rounds_invested_amount"
+    t.check_constraint "status::text = 'pending'::text AND received_leg IS NULL AND received_amount IS NULL AND quote_to_ledger_rate IS NULL AND received_relocked IS NULL AND settled_on IS NULL AND settlement_key IS NULL OR status::text = 'settled'::text AND (received_leg::text = ANY (ARRAY['asset'::character varying::text, 'quote'::character varying::text])) AND received_amount > 0::numeric AND quote_to_ledger_rate > 0::numeric AND received_relocked IS NOT NULL AND settled_on IS NOT NULL AND settlement_key IS NOT NULL", name: "chk_fft_derivative_rounds_status"
+    t.check_constraint "strike_price > 0::numeric", name: "chk_fft_derivative_rounds_strike_price"
+  end
+
+  create_table "fft_investment_activity_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "activity_kind", null: false
+    t.datetime "created_at", null: false
+    t.uuid "created_by_id"
+    t.uuid "family_id", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "occurred_at"
+    t.string "status", default: "active", null: false
+    t.string "time_precision", default: "date", null: false
+    t.datetime "updated_at", null: false
+    t.text "void_reason"
+    t.datetime "voided_at"
+    t.uuid "voided_by_id"
+    t.index ["created_by_id"], name: "index_fft_investment_activity_groups_on_created_by_id"
+    t.index ["family_id"], name: "index_fft_investment_activity_groups_on_family_id"
+    t.index ["voided_by_id"], name: "index_fft_investment_activity_groups_on_voided_by_id"
+    t.check_constraint "activity_kind::text = ANY (ARRAY['buy'::character varying::text, 'sell'::character varying::text, 'transfer'::character varying::text, 'contribution'::character varying::text, 'withdrawal'::character varying::text, 'dividend'::character varying::text, 'interest'::character varying::text, 'reinvestment'::character varying::text, 'fee'::character varying::text, 'tax'::character varying::text, 'exchange'::character varying::text, 'derivative'::character varying::text, 'opening'::character varying::text, 'special'::character varying::text, 'unclassified_cash'::character varying::text])", name: "chk_fft_activity_groups_kind"
+    t.check_constraint "status::text = 'active'::text AND voided_at IS NULL AND voided_by_id IS NULL AND void_reason IS NULL OR status::text = 'voided'::text AND voided_at IS NOT NULL AND void_reason IS NOT NULL", name: "chk_fft_activity_groups_void_state"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying::text, 'voided'::character varying::text])", name: "chk_fft_activity_groups_status"
+    t.check_constraint "time_precision::text = 'date'::text AND occurred_at IS NULL OR time_precision::text = 'exact'::text AND occurred_at IS NOT NULL", name: "chk_fft_activity_groups_time_value"
+    t.check_constraint "time_precision::text = ANY (ARRAY['date'::character varying::text, 'exact'::character varying::text])", name: "chk_fft_activity_groups_time_precision"
+  end
+
+  create_table "fft_investment_activity_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "activity_group_id", null: false
+    t.string "component_role", null: false
+    t.datetime "created_at", null: false
+    t.uuid "entry_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["activity_group_id", "component_role"], name: "idx_fft_activity_memberships_group_role", unique: true
+    t.index ["entry_id"], name: "idx_fft_activity_memberships_entry", unique: true
+    t.index ["entry_id"], name: "index_fft_investment_activity_memberships_on_entry_id"
+    t.check_constraint "component_role::text = ANY (ARRAY['primary'::character varying::text, 'transfer_outflow'::character varying::text, 'transfer_inflow'::character varying::text, 'source_fee'::character varying::text, 'destination_fee'::character varying::text, 'income'::character varying::text, 'purchase'::character varying::text, 'exchange_outflow'::character varying::text, 'exchange_inflow'::character varying::text, 'special'::character varying::text])", name: "chk_fft_activity_memberships_role"
+  end
+
+  create_table "fft_investment_activity_revisions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action", null: false
+    t.uuid "activity_group_id", null: false
+    t.uuid "actor_id"
+    t.datetime "created_at", null: false
+    t.text "reason", null: false
+    t.jsonb "snapshot", default: {}, null: false
+    t.index ["activity_group_id"], name: "index_fft_investment_activity_revisions_on_activity_group_id"
+    t.index ["actor_id"], name: "index_fft_investment_activity_revisions_on_actor_id"
+    t.check_constraint "action::text = ANY (ARRAY['created'::character varying::text, 'corrected'::character varying::text, 'voided'::character varying::text])", name: "chk_fft_activity_revisions_action"
+    t.check_constraint "char_length(reason) >= 1 AND char_length(reason) <= 1000", name: "chk_fft_activity_revisions_reason"
+  end
+
+  create_table "fft_investment_asset_classifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "classification", default: "crypto_asset", null: false
+    t.datetime "created_at", null: false
+    t.boolean "depeg_risk_visible", default: true, null: false
+    t.uuid "family_id", null: false
+    t.uuid "security_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["family_id", "security_id"], name: "idx_fft_asset_classifications_family_security", unique: true
+    t.index ["family_id"], name: "index_fft_investment_asset_classifications_on_family_id"
+    t.index ["security_id"], name: "index_fft_investment_asset_classifications_on_security_id"
+    t.check_constraint "classification::text = ANY (ARRAY['crypto_asset'::character varying::text, 'cash_equivalent'::character varying::text])", name: "chk_fft_asset_classifications_value"
+    t.check_constraint "depeg_risk_visible = true", name: "chk_fft_asset_classifications_depeg_risk"
+  end
+
+  create_table "fft_investment_operation_details", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "cash_flow_override_reason", limit: 500
+    t.datetime "created_at", null: false
+    t.string "exit_reason"
+    t.string "plan_adherence"
+    t.string "position_side", default: "long", null: false
+    t.text "review_notes"
+    t.decimal "stop_loss_price", precision: 19, scale: 10
+    t.string "strategy"
+    t.string "tags", default: [], null: false, array: true
+    t.decimal "take_profit_price", precision: 19, scale: 10
+    t.uuid "trade_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["trade_id"], name: "index_fft_investment_operation_details_on_trade_id", unique: true
+    t.check_constraint "cardinality(tags) <= 20", name: "chk_fft_operation_details_tags_count"
+    t.check_constraint "exit_reason IS NULL OR char_length(exit_reason::text) <= 255", name: "chk_fft_operation_details_exit_reason_length"
+    t.check_constraint "plan_adherence IS NULL OR (plan_adherence::text = ANY (ARRAY['followed'::character varying::text, 'deviated'::character varying::text, 'not_applicable'::character varying::text]))", name: "chk_fft_operation_details_adherence"
+    t.check_constraint "position_side::text = ANY (ARRAY['long'::character varying::text, 'short'::character varying::text])", name: "chk_fft_operation_details_position_side"
+    t.check_constraint "review_notes IS NULL OR char_length(review_notes) <= 10000", name: "chk_fft_operation_details_review_notes_length"
+    t.check_constraint "stop_loss_price IS NULL OR stop_loss_price > 0::numeric", name: "chk_fft_operation_details_stop_positive"
+    t.check_constraint "strategy IS NULL OR char_length(strategy::text) <= 255", name: "chk_fft_operation_details_strategy_length"
+    t.check_constraint "take_profit_price IS NULL OR take_profit_price > 0::numeric", name: "chk_fft_operation_details_target_positive"
   end
 
   create_table "goal_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -893,11 +1149,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["family_id"], name: "index_goals_on_family_id"
     t.check_constraint "char_length(name::text) <= 255", name: "chk_savings_goals_name_length"
     t.check_constraint "consumed_amount >= 0::numeric", name: "chk_goals_consumed_amount_non_negative"
-    t.check_constraint "kind::text = ANY (ARRAY['one_off'::character varying::text, 'maintained'::character varying::text])", name: "chk_goals_kind_enum"
+    t.check_constraint "kind::text = ANY (ARRAY['one_off'::character varying, 'maintained'::character varying]::text[])", name: "chk_goals_kind_enum"
     t.check_constraint "progress_basis::text = ANY (ARRAY['balance'::character varying::text, 'contributions'::character varying::text])", name: "chk_goals_progress_basis_enum"
     t.check_constraint "state::text = ANY (ARRAY['active'::character varying::text, 'paused'::character varying::text, 'completed'::character varying::text, 'archived'::character varying::text])", name: "chk_savings_goals_state_enum"
     t.check_constraint "target_amount > 0::numeric", name: "chk_savings_goals_target_amount_positive"
-    t.check_constraint "target_mode::text = ANY (ARRAY['fixed'::character varying::text, 'months_of_expenses'::character varying::text])", name: "chk_goals_target_mode_enum"
+    t.check_constraint "target_mode::text = ANY (ARRAY['fixed'::character varying, 'months_of_expenses'::character varying]::text[])", name: "chk_goals_target_mode_enum"
   end
 
   create_table "holdings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1540,7 +1796,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["onchain_wallet_item_id", "chain", "wallet_address"], name: "index_onchain_wallet_accounts_unique_native", unique: true, where: "((asset_kind)::text = 'native'::text)"
     t.index ["onchain_wallet_item_id"], name: "index_onchain_wallet_accounts_on_onchain_wallet_item_id"
     t.check_constraint "asset_kind::text = 'native'::text OR contract_address IS NOT NULL", name: "chk_onchain_wallet_accounts_token_has_contract"
-    t.check_constraint "asset_kind::text = ANY (ARRAY['native'::character varying::text, 'erc20'::character varying::text, 'spl'::character varying::text])", name: "chk_onchain_wallet_accounts_known_asset_kind"
+    t.check_constraint "asset_kind::text = ANY (ARRAY['native'::character varying, 'erc20'::character varying, 'spl'::character varying]::text[])", name: "chk_onchain_wallet_accounts_known_asset_kind"
   end
 
   create_table "onchain_wallet_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1650,7 +1906,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index "lower((token)::text)", name: "index_push_subscriptions_on_lower_token", unique: true
     t.index ["last_registered_at"], name: "index_push_subscriptions_on_last_registered_at"
     t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
-    t.check_constraint "environment::text = ANY (ARRAY['sandbox'::character varying::text, 'production'::character varying::text])", name: "chk_push_subscriptions_environment"
+    t.check_constraint "environment::text = ANY (ARRAY['sandbox'::character varying, 'production'::character varying]::text[])", name: "chk_push_subscriptions_environment"
     t.check_constraint "platform::text = 'ios'::text", name: "chk_push_subscriptions_platform"
   end
 
@@ -2301,7 +2557,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.datetime "created_at", null: false
     t.string "currency"
     t.jsonb "extra", default: {}, null: false
-    t.decimal "fee", precision: 19, scale: 4, default: "0.0", null: false
+    t.decimal "fee", precision: 19, scale: 8, default: "0.0", null: false
     t.string "investment_activity_label"
     t.jsonb "locked_attributes", default: {}
     t.decimal "price", precision: 19, scale: 10
@@ -2570,6 +2826,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
   add_foreign_key "budgets", "users", on_delete: :cascade
   add_foreign_key "categories", "families"
   add_foreign_key "chats", "users"
+  add_foreign_key "closed_positions", "accounts", on_delete: :cascade
+  add_foreign_key "closed_positions", "securities"
   add_foreign_key "coinbase_accounts", "coinbase_items"
   add_foreign_key "coinbase_items", "families"
   add_foreign_key "coinstats_accounts", "coinstats_items"
@@ -2578,8 +2836,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
   add_foreign_key "debug_log_entries", "accounts", on_delete: :nullify
   add_foreign_key "debug_log_entries", "families", on_delete: :nullify
   add_foreign_key "debug_log_entries", "users", on_delete: :nullify
+  add_foreign_key "derivative_batches", "accounts", on_delete: :cascade
+  add_foreign_key "derivative_rounds", "derivative_batches", on_delete: :cascade
   add_foreign_key "enable_banking_accounts", "enable_banking_items"
   add_foreign_key "enable_banking_items", "families"
+  add_foreign_key "entitlements", "entries", column: "source_entry_id", on_delete: :nullify
+  add_foreign_key "entitlements", "families", on_delete: :cascade
   add_foreign_key "entries", "account_statements", column: "reconciled_by_statement_id", on_delete: :nullify
   add_foreign_key "entries", "accounts", on_delete: :cascade
   add_foreign_key "entries", "entries", column: "parent_entry_id", on_delete: :cascade
@@ -2592,6 +2854,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
   add_foreign_key "family_exports", "families"
   add_foreign_key "family_merchant_associations", "families"
   add_foreign_key "family_merchant_associations", "merchants"
+  add_foreign_key "fft_derivative_allocations", "fft_derivative_batches", column: "derivative_batch_id", on_delete: :cascade
+  add_foreign_key "fft_derivative_allocations", "fft_derivative_rounds", column: "derivative_round_id", on_delete: :cascade
+  add_foreign_key "fft_derivative_allocations", "securities", on_delete: :restrict
+  add_foreign_key "fft_derivative_batches", "accounts", on_delete: :cascade
+  add_foreign_key "fft_derivative_batches", "securities", column: "asset_security_id", on_delete: :restrict
+  add_foreign_key "fft_derivative_batches", "securities", column: "quote_security_id", on_delete: :restrict
+  add_foreign_key "fft_derivative_ledger_links", "entries", on_delete: :cascade
+  add_foreign_key "fft_derivative_ledger_links", "fft_derivative_rounds", column: "derivative_round_id", on_delete: :cascade
+  add_foreign_key "fft_derivative_rounds", "fft_derivative_batches", column: "derivative_batch_id", on_delete: :cascade
+  add_foreign_key "fft_investment_activity_groups", "families", on_delete: :cascade
+  add_foreign_key "fft_investment_activity_groups", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "fft_investment_activity_groups", "users", column: "voided_by_id", on_delete: :nullify
+  add_foreign_key "fft_investment_activity_memberships", "entries", on_delete: :restrict
+  add_foreign_key "fft_investment_activity_memberships", "fft_investment_activity_groups", column: "activity_group_id", on_delete: :cascade
+  add_foreign_key "fft_investment_activity_revisions", "fft_investment_activity_groups", column: "activity_group_id", on_delete: :cascade
+  add_foreign_key "fft_investment_activity_revisions", "users", column: "actor_id", on_delete: :nullify
+  add_foreign_key "fft_investment_asset_classifications", "families", on_delete: :cascade
+  add_foreign_key "fft_investment_asset_classifications", "securities", on_delete: :cascade
+  add_foreign_key "fft_investment_operation_details", "trades", on_delete: :cascade
   add_foreign_key "goal_accounts", "accounts", on_delete: :restrict
   add_foreign_key "goal_accounts", "goals", on_delete: :cascade
   add_foreign_key "goal_pledges", "accounts", on_delete: :restrict

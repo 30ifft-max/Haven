@@ -1,103 +1,178 @@
-# Repository Guidelines
+# Haven Codex Engineering Contract
 
-## Project Structure & Module Organization
-- Code: `app/` (Rails MVC, services, jobs, mailers, components), JS in `app/javascript/`, styles/assets in `app/assets/` (Tailwind, images, fonts).
-- Config: `config/`, environment examples in `.env.local.example` and `.env.test.example`.
-- Data: `db/` (migrations, seeds), fixtures in `test/fixtures/`.
-- Tests: `test/` mirroring `app/` (e.g., `test/models/*_test.rb`).
-- Tooling: `bin/` (project scripts), `docs/` (guides), `public/` (static), `lib/` (shared libs).
+> Canonical AI engineering contract for this repository.
+>
+> Haven is a long-lived downstream extension of Sure, not a rewrite. New Haven
+> features must remain isolated so future Sure releases can still be merged.
+> Detailed rules live in `docs/ai/` and are loaded only when relevant.
 
-## Build, Test, and Development Commands
-- Setup: `cp .env.local.example .env.local && bin/setup` — install deps, set DB, prepare app.
-- Run app: `bin/dev` — starts Rails server and asset/watchers via `Procfile.dev`.
-- Test suite: `bin/rails test` — run all Minitest tests; add `TEST=test/models/user_test.rb` to target a file.
-- Lint Ruby: `bin/rubocop` — style checks; add `-A` to auto-correct safe cops.
-- Lint/format JS/CSS: `npm run lint` and `npm run format` — uses Biome.
-- Security scan: `bin/brakeman` — static analysis for common Rails issues.
+## 1. Instruction precedence
 
-## Coding Style & Naming Conventions
-- Ruby: 2-space indent, `snake_case` for methods/vars, `CamelCase` for classes/modules. Follow Rails conventions for folders and file names.
-- Views: ERB checked by `erb-lint` (see `.erb_lint.yml`). Avoid heavy logic in views; prefer helpers/components.
-- JavaScript: `lowerCamelCase` for vars/functions, `PascalCase` for classes/components. Let Biome format code.
-- Commit small, cohesive changes; keep diffs focused.
+When instructions conflict, use this order:
 
-## Testing Guidelines
-- Framework: Minitest (Rails). Name files `*_test.rb` and mirror `app/` structure.
-- Run: `bin/rails test` locally and ensure green before pushing.
-- Fixtures/VCR: Use `test/fixtures` and existing VCR cassettes for HTTP. Prefer unit tests plus focused integration tests.
+1. Explicit user instructions for the current task.
+2. This `AGENTS.md`.
+3. Task-relevant documents under `docs/ai/`.
+4. Other task-specific repository documentation.
+5. Existing tests, code, schema and configuration as evidence.
+6. Inherited or legacy guidance such as `CLAUDE.md` and `.cursor/rules/`.
 
-## Commit & Pull Request Guidelines
-- Commits: Imperative subject ≤ 72 chars (e.g., "Add account balance validation"). Include rationale in body and reference issues (`#123`).
-- PRs: Clear description, linked issues, screenshots for UI changes, and migration notes if applicable. Ensure CI passes, tests added/updated, and `rubocop`/Biome are clean.
+Do not blindly follow stale documentation when code, tests or configuration
+disagree. Investigate and report the mismatch.
 
-## Security & Configuration Tips
-- Never commit secrets. Start from `.env.local.example`; use `.env.local` for development only.
-- Run `bin/brakeman` before major PRs. Prefer environment variables over hard-coded values.
+## 2. Mission
 
-## API Development Guidelines
+Optimize changes in this order:
 
-### OpenAPI Documentation (MANDATORY)
-When adding or modifying API endpoints in `app/controllers/api/v1/`, you **MUST** create or update corresponding OpenAPI request specs for **DOCUMENTATION ONLY**:
+1. financial and data correctness;
+2. authorization, privacy and security;
+3. compatibility with Sure upstream;
+4. isolation of Haven-specific behavior;
+5. testability and rollback safety;
+6. user experience;
+7. performance where evidence justifies it;
+8. local code elegance.
 
-1. **Location**: `spec/requests/api/v1/{resource}_spec.rb`
-2. **Framework**: RSpec with rswag for OpenAPI generation
-3. **Schemas**: Define reusable schemas in `spec/swagger_helper.rb`
-4. **Generated Docs**: `docs/api/openapi.yaml`
-5. **Regenerate**: Run `RAILS_ENV=test bundle exec rake rswag:specs:swaggerize` after changes
+Do not trade correctness or upstream maintainability for fewer lines of code.
+The user is not expected to make technical decisions that the repository can
+answer; investigate first and explain material choices in clear Chinese.
 
-### Post-commit API consistency (LLM checklist)
-After every API endpoint commit, ensure: (1) **Minitest** behavioral coverage in `test/controllers/api/v1/{resource}_controller_test.rb` (no behavioral assertions in rswag); (2) **rswag** remains docs-only (no `expect`/`assert_*` in `spec/requests/api/v1/`); (3) **rswag auth** uses the same API key pattern everywhere (`X-Api-Key`, not OAuth/Bearer). Full checklist: [.cursor/rules/api-endpoint-consistency.mdc](.cursor/rules/api-endpoint-consistency.mdc).
+## 3. Mandatory task start
 
-## Design System Hygiene (UI PRs)
+Before editing:
 
-When a PR touches `.erb`, view components, or `.css`:
+1. Inspect `git status`.
+2. Treat every existing modified or untracked file as user-owned.
+3. Do not overwrite, delete or reset unrelated user changes.
+4. Classify the task as either Sure-compatible work or Haven-specific work.
+5. Inspect relevant code, callers, tests, schema and analogous implementations.
+6. For non-trivial work, form a concise plan before editing.
+7. Load only the task-relevant documents listed below.
 
-1. **Tokens, not palette.** Use functional tokens from `app/assets/tailwind/sure-design-system.css` (`bg-warning/10`, `text-destructive`, `bg-container`, `text-primary`, `border-primary`). No raw Tailwind palette (`bg-blue-50`, `text-red-500`, hex literals).
-2. **Reach for `DS::*` first.** Check `app/components/DS/` (`DS::Alert`, `DS::Button`, `DS::Disclosure`, `DS::Dialog`, `DS::Menu`, etc.) before writing an alert, badge, button, disclosure, dialog, or input shape.
-3. **Two copies → lift to DS.** Same hand-rolled shape ≥2× in a diff with no DS equivalent → propose a new `DS::*` primitive before the second copy lands.
-4. **Conventions.** Use the `icon` helper (never `lucide_icon` directly), no raw SVG outside DS primitives, user-facing strings via `t()`, avoid arbitrary `*-[Npx]` values when a scale token fits.
+## 4. On-demand instruction map
 
-Reviewers escalate violations of (2)–(3) to close/rewrite; (1) and (4) are request-changes.
+Read before acting when the trigger applies:
 
-## Securities Providers
+- Repository navigation or unfamiliar subsystem:
+  `docs/ai/PROJECT_MAP.md`
+- Any new or changed Haven feature or Sure integration point:
+  `docs/ai/HAVEN_EXTENSION_BOUNDARY.md`
+- Any YELLOW or RED change:
+  `docs/ai/RISK_ZONES.md`
+- Balances, entries, transactions, trades, holdings, performance, cost basis,
+  prices, FX or other financial calculations:
+  `docs/ai/FINANCIAL_INVARIANTS.md`
+- Choosing or running verification:
+  `docs/ai/DEVELOPMENT_WORKFLOW.md`
+- Merging or rebasing from Sure upstream:
+  `docs/ai/UPSTREAM_SYNC.md`
+- Adding or changing a Haven feature or its Sure integration point:
+  read and update `docs/ai/CUSTOMIZATION_MANIFEST.md`
 
-If you need to add a new securities price provider (Tiingo, EODHD, Binance-style crypto, etc.), see [adding-a-securities-provider.md](./docs/llm-guides/adding-a-securities-provider.md) for the full walkthrough — provider class, registry wiring, MIC handling, settings UI, locales, and tests.
+Do not load unrelated specialist documents merely because they exist.
 
-## Debug Logging for Provider Syncs
+## 5. Scope discipline
 
-When a provider sync/import path hits a recoverable error or suspicious partial response that support may need to inspect later, prefer `DebugLogEntry.capture(...)` over `Rails.logger.*`.
+Always:
 
-- Record support-relevant diagnostics in the debug log so they surface in the super-admin-friendly `/settings/debug` UI.
-- Include `category`, `level`, `message`, `source`, `provider_key`, and useful structured `metadata`.
-- Attach `family` and `account_provider` when available so support can filter and trace the affected connection.
-- Reserve raw Rails logging for low-value local noise; anything operators may need should go to the debug log.
+- make the smallest coherent change;
+- preserve public behavior unless the task explicitly changes it;
+- search for an existing pattern before creating an abstraction;
+- add or update tests for behavior changes;
+- inspect the final diff and keep it free of unrelated changes.
 
-## Providers: Pending Transactions and FX Metadata (SimpleFIN/Plaid/Lunchflow)
+Never, unless explicitly requested:
 
-- Pending detection
-  - SimpleFIN: pending when provider sends `pending: true`, or when `posted` is blank/0 and `transacted_at` is present.
-  - Plaid: pending when Plaid sends `pending: true` (stored at `transaction.extra["plaid"]["pending"]` for bank/credit transactions imported via `PlaidEntry::Processor`).
-  - Lunchflow: pending when API returns `isPending: true` in transaction response (stored at `transaction.extra["lunchflow"]["pending"]`).
-- Storage (extras)
-  - Provider metadata lives on `Transaction#extra`, namespaced (e.g., `extra["simplefin"]["pending"]`).
-  - SimpleFIN FX: `extra["simplefin"]["fx_from"]`, `extra["simplefin"]["fx_date"]`.
-- UI
-  - Shows a small “Pending” badge when `transaction.pending?` is true.
-- Variability
-  - Some providers don’t expose pendings; in that case nothing is shown.
-- Configuration (default-off)
-  - SimpleFIN runtime toggles live in `config/initializers/simplefin.rb` via `Rails.configuration.x.simplefin.*`.
-  - Lunchflow runtime toggles live in `config/initializers/lunchflow.rb` via `Rails.configuration.x.lunchflow.*`.
-  - ENV-backed keys:
-    - `SIMPLEFIN_INCLUDE_PENDING=1` (forces `pending=1` on SimpleFIN fetches when caller didn’t specify a `pending:` arg)
-    - `SIMPLEFIN_DEBUG_RAW=1` (logs raw payload returned by SimpleFIN)
-    - `LUNCHFLOW_INCLUDE_PENDING=1` (forces `include_pending=true` on Lunchflow API requests)
-    - `LUNCHFLOW_DEBUG_RAW=1` (logs raw payload returned by Lunchflow)
+- commit, push, open a PR or rewrite Git history;
+- delete or reset user changes;
+- perform destructive Git, filesystem, database or production operations;
+- start a long-running Rails server merely for verification;
+- automatically run migrations;
+- edit an existing migration or hand-edit `db/schema.rb`;
+- add a dependency without a strong reason;
+- perform unrelated cleanup, refactoring or bulk formatting.
 
-### Provider support notes
+## 6. Sure and Haven boundary
 
-- SimpleFIN: supports pending + FX metadata; stored under `extra["simplefin"]`.
-- Plaid: supports pending when the upstream Plaid payload includes `pending: true`; stored under `extra["plaid"]`.
-- Plaid investments: investment transactions currently do not store pending metadata.
-- Lunchflow: supports pending via `include_pending` query parameter; stored under `extra["lunchflow"]`.
-- Manual/CSV imports: no pending concept.
+Sure-compatible changes should follow Sure's existing architecture and be kept
+suitable for upstream contribution where practical.
+
+Haven-specific features, including investment analysis and investment journals,
+must prefer the `Haven::` Ruby namespace and corresponding `haven/` directories.
+The Rails application module remains `Sure::Application`; do not rename upstream
+core merely because this downstream repository is called Haven.
+
+Prefer isolated Haven models/POROs, controllers, components, views, Stimulus
+controllers, locales and tests. Do not dump Haven domain logic into central Sure
+models such as `Account`, `Family`, `Entry`, `Transaction`, `Trade` or `Holding`.
+
+Aim for narrow, explicit, tested integration points in Sure-owned files. Avoid
+whole-page copies, monkey patches, class reopening and broad upstream rewrites.
+See `docs/ai/HAVEN_EXTENSION_BOUNDARY.md` for paths and exceptions.
+
+## 7. Risk control
+
+- GREEN: isolated Haven code, tests, locales and documentation.
+- YELLOW: routes, navigation, shared pages, core associations, configuration,
+  API shapes and shared component call sites.
+- RED: ledger and financial core, money/FX/cost/performance logic, sync/import,
+  providers, authentication/authorization, API foundations, existing migrations
+  and Sure design-system core.
+
+For RED changes:
+
+1. establish why the Haven extension layer is insufficient;
+2. keep the diff as small as possible;
+3. add direct regression tests and integration-boundary tests;
+4. report the upstream merge risk explicitly;
+5. identify financial, security or data assumptions requiring human review.
+
+## 8. Mandatory engineering rules
+
+- Use `Current.user` and `Current.family`, not `current_user` or
+  `current_family`.
+- UI hiding is not authorization; scope records by accessible family/account and
+  distinguish read from write access.
+- Never expose credentials, tokens or sensitive financial/provider payloads in
+  logs, errors, exports, notifications or AI context.
+- Use Money/Decimal mechanisms for financial values; never silently combine
+  currencies or substitute current FX for historical FX.
+- Sync/import paths must preserve idempotency, provider identity, namespaced
+  metadata, pending semantics and user-edited fields.
+- Use `DebugLogEntry.capture(...)` for support-relevant recoverable provider
+  diagnostics; never log secrets or full sensitive payloads.
+- New migrations inherit from `ActiveRecord::Migration[7.2]` until the repository
+  convention explicitly changes.
+- API behavior belongs in Minitest; rswag specs are documentation-only and use
+  the existing `X-Api-Key` convention.
+- UI work checks `app/components/DS/` first, uses semantic design tokens, the
+  `icon` helper and `t()` for user-visible strings.
+- Read `docs/llm-guides/adding-a-securities-provider.md` before adding a
+  securities price provider.
+
+## 9. Verification
+
+Run focused checks first, then broaden according to risk. Never delete or weaken
+a test merely to make a change pass. If a relevant check cannot run, state why
+and do not imply it passed.
+
+Behavior is primarily tested with Minitest and fixtures. External HTTP uses the
+existing VCR/WebMock patterns. API documentation uses docs-only RSpec/rswag.
+Detailed commands and the verification matrix are in
+`docs/ai/DEVELOPMENT_WORKFLOW.md`.
+
+## 10. Completion and reporting
+
+A task is complete only when:
+
+- the requested behavior is implemented;
+- the diff is focused and preserves user-owned changes;
+- relevant tests pass or failures are reported accurately;
+- required generated artifacts and documentation are updated;
+- migration, configuration and manual steps are explained;
+- financial, authorization, sync and upstream risks are reported honestly.
+
+Report results in clear Chinese. Include only relevant categories, but always
+state what changed, tests run and not run, remaining uncertainty, and Sure
+upstream impact. For RED changes, also explain why the core edit was necessary
+and what the next Sure merge must re-check.
