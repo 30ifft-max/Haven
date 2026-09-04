@@ -56,7 +56,7 @@
   </div>
   <% if Current.family.recurring_transactions_disabled? %>
     <%= render "transactions/list", transactions: @transactions, projected_recurring: @projected_recurring, q: params[:q], pagy: @pagy %>
-    <div class="pt-2">
+    <div class="pt-4">
       <%= render "shared/pagination", pagy: @pagy %>
     </div>
   <% else %>
@@ -71,7 +71,7 @@
         <div class="bg-container rounded-xl shadow-border-xs focus:outline-none focus:ring-0 focus-within:outline-none focus-within:ring-0">
           <%= render "transactions/list", transactions: @transactions, projected_recurring: @projected_recurring, q: params[:q], pagy: @pagy %>
         </div>
-        <div class="pt-2">
+        <div class="pt-4">
           <%= render "shared/pagination", pagy: @pagy %>
         </div>
       <% end %>

@@ -3,8 +3,7 @@
 <% transaction = entry.entryable %>
 <%= turbo_frame_tag dom_id(entry) do %>
   <%= turbo_frame_tag dom_id(transaction) do %>
-    <div class="group flex lg:grid lg:grid-cols-12 items-center text-primary text-sm font-medium p-3 lg:p-4 <%= "pl-8 lg:pl-12" if in_split_group %>">
-
+    <div class="group flex lg:grid lg:grid-cols-12 items-center text-primary text-sm font-medium p-3 lg:p-4">
       <div class="pr-4 lg:pr-10 flex items-center gap-3 lg:gap-4 col-span-3 min-w-0">
         <%= check_box_tag dom_id(entry, "selection"),
             disabled: transaction.transfer.present?,
@@ -26,6 +25,12 @@
             <div class="truncate">
               <div class="space-y-0.5">
                 <div class="flex items-center gap-1 min-w-0">
+                  <% if entry.split_child? && in_split_group %>
+                    <span class="text-secondary shrink-0" title="<%= t("transactions.transaction.split_child_tooltip") %>">
+                      <%= icon "corner-down-right", size: "sm", color: "current" %>
+                    </span>
+                  <% end %>
+
                   <div class="truncate flex-shrink">
                     <% if transaction.transfer? %>
                       <%= link_to(
@@ -52,7 +57,7 @@
 
                   <div class="flex items-center gap-1 flex-shrink-0">
                     <% if transaction.one_time? %>
-                      <span class="text-orange-500" title="One-time <%= entry.amount.negative? ? "income" : "expense" %> (excluded from averages)">
+                      <span class="text-orange-500" title="<%= t("transactions.show.one_time_title", type: t(entry.amount.negative? ? "transactions.form.income" : "transactions.form.expense")) %>">
                         <%= icon "asterisk", size: "sm", color: "current" %>
                       </span>
                     <% end %>
@@ -151,11 +156,11 @@
         </div>
       </div>
 
-      <div class="hidden lg:flex items-center gap-2 col-span-2 text-secondary">
-        <%= render "transactions/status", entry: entry, transaction: transaction, preview: (@transactions&.first&.entry&.id == entry.id) %>
+      <div class="hidden lg:flex items-center gap-2 col-span-1 text-secondary">
+        <%= render "transactions/status", entry: entry, transaction: transaction %>
       </div>
 
-      <div class="hidden lg:flex min-w-0 items-center -ml-1 col-span-1 text-secondary">
+      <div class="hidden lg:flex min-w-0 items-center col-span-2 text-secondary">
         <span class="truncate"><%= transaction.transfer? ? (transaction.loan_payment? ? t("transactions.show.loan_payment") : t("transactions.show.transfer")) : (transaction.merchant&.name || "—") %></span>
       </div>
 
