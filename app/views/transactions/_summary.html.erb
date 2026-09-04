@@ -1,39 +1,40 @@
 <%# locals: (totals:) %>
-<%# Show Inflow/Outflow labels only when the result set contains exclusively transfers
-    (income and expense are both $0). For mixed filters (e.g. Expense+Transfer),
-    we keep Income/Expenses labels — transfer amounts aren't included in the summary
-    bar in that case, though the transaction list still shows both types. %>
-<% show_transfers = totals.income_money.zero? && totals.expense_money.zero? &&
-   (totals.transfer_inflow_money.amount > 0 || totals.transfer_outflow_money.amount > 0) %>
+<% fallback_currency = totals.income_money.currency.iso_code %>
+<% income_by_currency = totals.respond_to?(:income_by_currency) && totals.income_by_currency.present? ? totals.income_by_currency : { fallback_currency => totals.income_money } %>
+<% expense_by_currency = totals.respond_to?(:expense_by_currency) && totals.expense_by_currency.present? ? totals.expense_by_currency : { fallback_currency => totals.expense_money } %>
+<% transfer_inflow_by_currency = totals.respond_to?(:transfer_inflow_by_currency) && totals.transfer_inflow_by_currency.present? ? totals.transfer_inflow_by_currency : { fallback_currency => totals.transfer_inflow_money } %>
+<% transfer_outflow_by_currency = totals.respond_to?(:transfer_outflow_by_currency) && totals.transfer_outflow_by_currency.present? ? totals.transfer_outflow_by_currency : { fallback_currency => totals.transfer_outflow_money } %>
+<% max_expense_by_currency = totals.respond_to?(:max_expense_by_currency) ? totals.max_expense_by_currency : {} %>
+<% max_income_by_currency = totals.respond_to?(:max_income_by_currency) ? totals.max_income_by_currency : {} %>
+<% show_transfers = income_by_currency.values.all?(&:zero?) && expense_by_currency.values.all?(&:zero?) && transfer_inflow_by_currency.values.any? { |money| money.amount > 0 } %>
+<% income_totals = show_transfers ? transfer_inflow_by_currency : income_by_currency %>
+<% expense_totals = show_transfers ? transfer_outflow_by_currency : expense_by_currency %>
+
 <div class="grid grid-cols-1 md:grid-cols-3 bg-container rounded-xl shadow-border-xs md:divide-x divide-y md:divide-y-0 divide-alpha-black-100 theme-dark:divide-alpha-white-200">
   <div class="p-4 space-y-2">
     <p class="text-sm text-secondary"><%= t("transactions.summary.total_transactions") %></p>
     <p class="text-primary font-medium text-xl privacy-sensitive" id="total-transactions"><%= totals.count.round(0) %></p>
   </div>
-  <div class="p-4 space-y-2">
-    <% if show_transfers %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.inflow") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-income">
-        <%= (totals.income_money + totals.transfer_inflow_money).format %>
-      </p>
-    <% else %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.income") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-income">
-        <%= totals.income_money.format %>
-      </p>
-    <% end %>
+  <div class="p-4" id="total-income">
+    <p class="mb-3 text-sm font-medium text-green-500"><%= t(show_transfers ? "transactions.summary.inflow" : "transactions.summary.income") %></p>
+    <div class="space-y-3">
+      <% income_totals.reject { |_currency, money| money.zero? }.sort.each do |currency, money| %>
+        <div class="border-b border-secondary pb-2 last:border-0 last:pb-0">
+          <div class="flex items-center justify-between gap-3"><span class="text-sm font-medium text-secondary"><%= currency %></span><span class="text-primary font-medium privacy-sensitive"><%= money.format %></span></div>
+          <% if max_income_by_currency[currency]&.amount.to_i > 0 %><p class="mt-1 text-right text-xs text-secondary"><%= t("transactions.summary.maximum_income", amount: max_income_by_currency[currency].format) %></p><% end %>
+        </div>
+      <% end %>
+    </div>
   </div>
-  <div class="p-4 space-y-2">
-    <% if show_transfers %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.outflow") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-expense">
-        <%= (totals.expense_money + totals.transfer_outflow_money).format %>
-      </p>
-    <% else %>
-      <p class="text-sm text-secondary"><%= t("transactions.summary.expenses") %></p>
-      <p class="text-primary font-medium text-xl privacy-sensitive" id="total-expense">
-        <%= totals.expense_money.format %>
-      </p>
-    <% end %>
+  <div class="p-4" id="total-expense">
+    <p class="mb-3 text-sm font-medium text-red-500"><%= t(show_transfers ? "transactions.summary.outflow" : "transactions.summary.expenses") %></p>
+    <div class="space-y-3">
+      <% expense_totals.reject { |_currency, money| money.zero? }.sort.each do |currency, money| %>
+        <div class="border-b border-secondary pb-2 last:border-0 last:pb-0">
+          <div class="flex items-center justify-between gap-3"><span class="text-sm font-medium text-secondary"><%= currency %></span><span class="text-primary font-medium privacy-sensitive"><%= money.format %></span></div>
+          <% if max_expense_by_currency[currency]&.amount.to_i > 0 %><p class="mt-1 text-right text-xs text-secondary"><%= t("transactions.summary.maximum_expense", amount: max_expense_by_currency[currency].format) %></p><% end %>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>

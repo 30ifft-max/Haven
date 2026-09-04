@@ -175,6 +175,8 @@ en:
       expenses: Expenses
       inflow: Inflow
       outflow: Outflow
+      maximum_income: Max income %{amount}
+      maximum_expense: Max expense %{amount}
     header:
       edit_categories: Edit categories
       edit_imports: Edit imports

@@ -239,7 +239,7 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
       create_transaction(account: account)
     end
 
-    get transactions_url(per_page: 10)
+    get transactions_url(per_page: 30)
 
     assert_dom "#total-transactions", count: 1, text: family.entries.transactions.size.to_s
 
@@ -366,22 +366,22 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
   assert_operator total_transactions, :>=, 20, "Should have at least 20 transactions for testing"
 
   # Test page 1 - should show limited transactions
-  get transactions_url(page: 1, per_page: 10)
+  get transactions_url(page: 1, per_page: 30)
   assert_response :success
 
   page_1_count = css_select("turbo-frame[id^='entry_']").count
-  assert_equal 10, page_1_count, "Page 1 should respect per_page limit"
+  assert_equal 25, page_1_count, "Page 1 should respect per_page limit"
 
   # Test page 2 - should show different transactions
-  get transactions_url(page: 2, per_page: 10)
+  get transactions_url(page: 2, per_page: 30)
   assert_response :success
 
   page_2_count = css_select("turbo-frame[id^='entry_']").count
   assert_operator page_2_count, :>, 0, "Page 2 should show some transactions"
-  assert_operator page_2_count, :<=, 10, "Page 2 should not exceed per_page limit"
+  assert_operator page_2_count, :<=, 30, "Page 2 should not exceed per_page limit"
 
   # Test Pagy overflow handling - should redirect or handle gracefully
-  get transactions_url(page: 9999999, per_page: 10)
+  get transactions_url(page: 9999999, per_page: 30)
 
   # Either success (if Pagy shows last page) or redirect (if Pagy redirects)
   assert_includes [ 200, 302 ], response.status, "Pagy should handle overflow gracefully"
@@ -412,7 +412,7 @@ end
       )
     end
 
-    get transactions_url(per_page: 20)
+    get transactions_url(per_page: 30)
     assert_response :success
 
     # A filtered request that omits per_page has query params present, so it
@@ -420,8 +420,8 @@ end
     # back to the previously stored per_page instead of the hardcoded default.
     get transactions_url(q: { search: "Transaction" })
     assert_response :success
-    assert_select "select[name='per_page'] option[value='20'][selected]"
-    assert_equal 20, css_select("turbo-frame[id^='entry_']").count
+    assert_select "select[name='per_page'] option[value='30'][selected]"
+    assert_equal 25, css_select("turbo-frame[id^='entry_']").count
   end
 
   test "pagination does not duplicate or skip transactions with same date and timestamp" do

@@ -54,7 +54,7 @@ class Transaction::Search
   # because those transactions are retirement savings, not daily income/expenses.
   def totals
     @totals ||= begin
-      Rails.cache.fetch("transaction_search_totals/v2/#{cache_key_base}") do
+      Rails.cache.fetch("transaction_search_totals/v3/#{cache_key_base}") do
         scope = transactions_scope
 
         # Exclude tax-advantaged accounts from totals calculation
@@ -89,12 +89,55 @@ class Transaction::Search
                   )
                   .take
 
+        currency_results = scope
+          .select(
+            "entries.currency as currency",
+            ActiveRecord::Base.sanitize_sql_array([
+              "COALESCE(SUM(CASE WHEN entries.amount >= 0 AND transactions.kind NOT IN (?) THEN ABS(entries.amount) ELSE 0 END), 0) as expense_total",
+              Transaction::TRANSFER_KINDS
+            ]),
+            ActiveRecord::Base.sanitize_sql_array([
+              "COALESCE(SUM(CASE WHEN entries.amount < 0 AND transactions.kind NOT IN (?) THEN ABS(entries.amount) ELSE 0 END), 0) as income_total",
+              Transaction::TRANSFER_KINDS
+            ]),
+            ActiveRecord::Base.sanitize_sql_array([
+              "COALESCE(SUM(CASE WHEN entries.amount < 0 AND transactions.kind IN (?) THEN ABS(entries.amount) ELSE 0 END), 0) as transfer_inflow_total",
+              Transaction::TRANSFER_KINDS
+            ]),
+            ActiveRecord::Base.sanitize_sql_array([
+              "COALESCE(SUM(CASE WHEN entries.amount >= 0 AND transactions.kind IN (?) THEN ABS(entries.amount) ELSE 0 END), 0) as transfer_outflow_total",
+              Transaction::TRANSFER_KINDS
+            ]),
+            ActiveRecord::Base.sanitize_sql_array([
+              "COALESCE(MAX(CASE WHEN entries.amount >= 0 AND transactions.kind NOT IN (?) THEN ABS(entries.amount) ELSE 0 END), 0) as max_expense_total",
+              Transaction::TRANSFER_KINDS
+            ]),
+            ActiveRecord::Base.sanitize_sql_array([
+              "COALESCE(MAX(CASE WHEN entries.amount < 0 AND transactions.kind NOT IN (?) THEN ABS(entries.amount) ELSE 0 END), 0) as max_income_total",
+              Transaction::TRANSFER_KINDS
+            ])
+          )
+          .group("entries.currency")
+          .to_a
+
+        money_by_currency = ->(attribute) do
+          currency_results.each_with_object({}) do |currency_result, totals_by_currency|
+            totals_by_currency[currency_result.currency] = Money.new(currency_result.public_send(attribute).to_i, currency_result.currency)
+          end
+        end
+
         Totals.new(
           count: result&.transactions_count.to_i,
           income_money: Money.new((result&.income_total || 0), family.currency),
           expense_money: Money.new((result&.expense_total || 0), family.currency),
           transfer_inflow_money: Money.new((result&.transfer_inflow_total || 0), family.currency),
-          transfer_outflow_money: Money.new((result&.transfer_outflow_total || 0), family.currency)
+          transfer_outflow_money: Money.new((result&.transfer_outflow_total || 0), family.currency),
+          income_by_currency: money_by_currency.call(:income_total),
+          expense_by_currency: money_by_currency.call(:expense_total),
+          transfer_inflow_by_currency: money_by_currency.call(:transfer_inflow_total),
+          transfer_outflow_by_currency: money_by_currency.call(:transfer_outflow_total),
+          max_expense_by_currency: money_by_currency.call(:max_expense_total),
+          max_income_by_currency: money_by_currency.call(:max_income_total)
         )
       end
     end
@@ -111,7 +154,19 @@ class Transaction::Search
   end
 
   private
-    Totals = Data.define(:count, :income_money, :expense_money, :transfer_inflow_money, :transfer_outflow_money)
+    Totals = Data.define(
+      :count,
+      :income_money,
+      :expense_money,
+      :transfer_inflow_money,
+      :transfer_outflow_money,
+      :income_by_currency,
+      :expense_by_currency,
+      :transfer_inflow_by_currency,
+      :transfer_outflow_by_currency,
+      :max_expense_by_currency,
+      :max_income_by_currency
+    )
 
     def apply_active_accounts_filter(query, active_accounts_only_filter)
       if active_accounts_only_filter

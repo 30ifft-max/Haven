@@ -151,6 +151,8 @@ zh-CN:
       expenses: 支出
       inflow: 流入
       outflow: 流出
+      maximum_income: 最大收入 %{amount}
+      maximum_expense: 最大支出 %{amount}
     header:
       edit_categories: 编辑分类
       edit_imports: 编辑导入
