@@ -319,7 +319,10 @@ en:
           equal_to: Equal to
           greater_than: Greater than
           less_than: Less than
+          between: Between
           placeholder: '0'
+          min_placeholder: Minimum amount
+          max_placeholder: Maximum amount
         badge:
           expense: Expense
           income: Income
@@ -341,7 +344,7 @@ en:
         apply: Apply
         cancel: Cancel
         category_filter: Category
-        clear_filters: Clear filters
+        clear_filters: Clear all
         date_filter: Date
         merchant_filter: Merchant
         status_filter: Status

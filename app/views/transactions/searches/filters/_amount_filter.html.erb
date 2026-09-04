@@ -1,15 +1,58 @@
 <%# locals: (form:) %>
+<div class="space-y-3 p-2" data-controller="transaction-amount-filter">
+  <% {
+    "greater" => t(".greater_than"),
+    "less" => t(".less_than"),
+    "equal" => t(".equal_to"),
+    "between" => t(".between")
+  }.each do |value, label| %>
+    <% selected = @q[:amount_operator] == value %>
+    <div>
+      <div class="flex items-center gap-3">
+        <%= check_box_tag "q[amount_operator]",
+                          value,
+                          selected,
+                          id: "q_amount_operator_#{value}",
+                          class: "checkbox checkbox--light shrink-0",
+                          data: { transaction_amount_filter_target: "operator", action: "change->transaction-amount-filter#toggle" } %>
+        <%= label_tag "q_amount_operator_#{value}", label, class: "cursor-pointer text-sm text-primary" %>
+      </div>
 
-<div class="space-y-2">
-  <div class="form-field">
-    <%= form.select :amount_operator, options_for_select([
-      [t(".equal_to"), "equal"],
-      [t(".greater_than"), "greater"],
-      [t(".less_than"), "less"]
-    ], @q[:amount_operator] || "equal"), {}, class: "form-field__input" %>
-  </div>
-
-  <div class="form-field">
-    <%= form.number_field :amount, step: 0.01, class: "form-field__input", placeholder: t(".placeholder"), value: @q[:amount] %>
-  </div>
+      <% if value == "between" %>
+        <div class="<%= "hidden" unless selected %> mt-2 grid grid-cols-2 gap-2 pl-6"
+             data-transaction-amount-filter-target="panel"
+             data-operator="<%= value %>">
+          <%= form.number_field :amount_min,
+                                id: "q_amount_min",
+                                step: 0.01,
+                                autocomplete: "off",
+                                disabled: !selected,
+                                class: "w-full rounded-lg border border-secondary bg-container px-3 py-2 text-sm text-primary placeholder:text-subdued outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+                                placeholder: t(".min_placeholder"),
+                                value: @q[:amount_min] %>
+          <%= form.number_field :amount_max,
+                                id: "q_amount_max",
+                                step: 0.01,
+                                autocomplete: "off",
+                                disabled: !selected,
+                                class: "w-full rounded-lg border border-secondary bg-container px-3 py-2 text-sm text-primary placeholder:text-subdued outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+                                placeholder: t(".max_placeholder"),
+                                value: @q[:amount_max] %>
+        </div>
+      <% else %>
+        <div class="<%= "hidden" unless selected %> mt-2 pl-6"
+             data-transaction-amount-filter-target="panel"
+             data-operator="<%= value %>">
+          <%= form.number_field :amount,
+                                id: "q_amount_#{value}",
+                                step: 0.01,
+                                autocomplete: "off",
+                                disabled: !selected,
+                                class: "w-full rounded-lg border border-secondary bg-container px-3 py-2 text-sm text-primary placeholder:text-subdued outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+                                placeholder: t(".placeholder"),
+                                value: @q[:amount] %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>

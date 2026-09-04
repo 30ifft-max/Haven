@@ -287,7 +287,10 @@ zh-CN:
           equal_to: 等于
           greater_than: 大于
           less_than: 小于
+          between: 之间
           placeholder: '0'
+          min_placeholder: 最小金额
+          max_placeholder: 最大金额
         badge:
           expense: 支出
           income: 收入
@@ -317,7 +320,7 @@ zh-CN:
         apply: 应用
         cancel: 取消
         category_filter: 分类
-        clear_filters: 清除筛选
+        clear_filters: 清除所有
         date_filter: 日期
         merchant_filter: 商户
         status_filter: 状态

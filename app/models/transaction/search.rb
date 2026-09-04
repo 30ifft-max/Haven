@@ -5,6 +5,8 @@ class Transaction::Search
   attribute :search, :string
   attribute :amount, :string
   attribute :amount_operator, :string
+  attribute :amount_min, :string
+  attribute :amount_max, :string
   attribute :types, array: true
   attribute :status, array: true
   attribute :accounts, array: true
@@ -40,7 +42,7 @@ class Transaction::Search
       query = apply_tag_filter(query, tags)
       query = EntrySearch.apply_search_filter(query, search)
       query = EntrySearch.apply_date_filters(query, start_date, end_date)
-      query = EntrySearch.apply_amount_filter(query, amount, amount_operator)
+      query = EntrySearch.apply_amount_filter(query, amount, amount_operator, amount_min: amount_min, amount_max: amount_max)
       query = EntrySearch.apply_accounts_filter(query, accounts, account_ids)
 
       query

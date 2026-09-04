@@ -46,7 +46,10 @@ class TransactionsController < ApplicationController
                          }
                        )
 
-    @pagy, @transactions = pagy(base_scope, limit: safe_per_page(stored_params["per_page"]))
+    @pagy, @transactions = pagy(
+      base_scope,
+      limit: safe_per_page(stored_params["per_page"].presence || 30, allowed_values: [ 30, 50, 200, 500 ])
+    )
     Transaction::ActivitySecurityPreloader.new(@transactions).preload
 
     # Preload split parent data
@@ -610,7 +613,7 @@ class TransactionsController < ApplicationController
     def search_params
       cleaned_params = params.fetch(:q, {})
               .permit(
-                :start_date, :end_date, :search, :amount,
+                :start_date, :end_date, :search, :amount, :amount_min, :amount_max,
                 :amount_operator, :active_accounts_only,
                 accounts: [], account_ids: [],
                 categories: [], merchants: [], types: [], tags: [], status: []
@@ -618,7 +621,14 @@ class TransactionsController < ApplicationController
               .to_h
               .compact_blank
 
-      cleaned_params.delete(:amount_operator) unless cleaned_params[:amount].present?
+      if cleaned_params[:amount_operator] == "between"
+        unless cleaned_params[:amount_min].present? && cleaned_params[:amount_max].present?
+          cleaned_params.except!(:amount_operator, :amount_min, :amount_max)
+        end
+      else
+        cleaned_params.except!(:amount_min, :amount_max)
+        cleaned_params.delete(:amount_operator) unless cleaned_params[:amount].present?
+      end
 
 
       cleaned_params
@@ -630,7 +640,7 @@ class TransactionsController < ApplicationController
 
         params_to_restore[:q] = stored_params["q"].presence || {}
         params_to_restore[:page] = stored_params["page"].presence || 1
-        params_to_restore[:per_page] = stored_params["per_page"].presence || 50
+        params_to_restore[:per_page] = stored_params["per_page"].presence || 30
 
         redirect_to transactions_path(params_to_restore)
       else

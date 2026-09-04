@@ -6,6 +6,11 @@ export default class extends Controller {
 
   connect() {
     this.updateSelected();
+    this.observePopoverVisibility();
+  }
+
+  disconnect() {
+    this.popoverObserver?.disconnect();
   }
 
   updateSelected() {
@@ -27,6 +32,9 @@ export default class extends Controller {
     const input = this.element.querySelector(`#${CSS.escape(event.currentTarget.dataset.inputId)}`);
     if (!input) return;
 
+    if (input.name === "q[amount_min]") {
+      this.element.querySelector('[name="q[amount_max]"]').value = "";
+    }
     if (input.type === "checkbox") input.checked = false;
     else input.value = "";
 
@@ -36,7 +44,11 @@ export default class extends Controller {
   selectedInputs() {
     return Array.from(this.element.querySelectorAll("input, select")).filter((input) => {
       if (input.type === "hidden" || input.disabled || !input.name.startsWith("q[")) return false;
+      if (input.name === "q[amount_operator]") return false;
       if (input.type === "checkbox") return input.checked;
+      if (input.type === "radio") return false;
+      if (input.name === "q[amount_max]") return false;
+      if (input.name === "q[amount_min]") return input.value && this.element.querySelector('[name="q[amount_max]"]').value;
       return input.value;
     });
   }
@@ -47,7 +59,36 @@ export default class extends Controller {
     );
   }
 
+  observePopoverVisibility() {
+    const content = this.element.closest('[data-controller~="DS--popover"]')?.querySelector('[data-DS--popover-target="content"]');
+    if (!content) return;
+
+    this.popoverObserver = new MutationObserver(() => {
+      if (!content.classList.contains("hidden")) this.focusActiveSearchAfterRender();
+    });
+    this.popoverObserver.observe(content, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  focusActiveSearchAfterRender() {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => this.activeSearchInput()?.focus());
+    });
+  }
+
   labelFor(input) {
+    if (input.name === "q[amount]") {
+      const operator = this.element.querySelector('input[name="q[amount_operator]"]:checked');
+      const operatorLabel = operator && this.element.querySelector(`label[for="${operator.id}"]`);
+      return `${operatorLabel?.textContent.trim() || ""} ${input.value}`.trim();
+    }
+
+    if (input.name === "q[amount_min]") {
+      const maximum = this.element.querySelector('[name="q[amount_max]"]').value;
+      const operator = this.element.querySelector('input[name="q[amount_operator]"]:checked');
+      const operatorLabel = operator && this.element.querySelector(`label[for="${operator.id}"]`);
+      return `${operatorLabel?.textContent.trim() || ""} ${input.value} – ${maximum}`.trim();
+    }
+
     if (input.tagName === "SELECT") return input.selectedOptions[0]?.textContent.trim();
     const label = input.id && this.element.querySelector(`label[for="${input.id}"]`);
     return label ? label.textContent.trim() : input.value;

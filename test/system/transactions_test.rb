@@ -24,9 +24,9 @@ class TransactionsTest < ApplicationSystemTestCase
 
     @transaction = @transactions.first
 
-    @page_size = 10
+    @page_size = 30
 
-    visit transactions_url(per_page: @page_size)
+    visit transactions_url
   end
 
   test "can search for a transaction" do
@@ -97,8 +97,8 @@ class TransactionsTest < ApplicationSystemTestCase
       check("Income")
 
       click_button "Amount"
-      select "Less than"
-      fill_in "q_amount", with: 200
+      check "Less than"
+      fill_in "q_amount_less", with: 200
 
       click_button "Category"
       check(category.name)

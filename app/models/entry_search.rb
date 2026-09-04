@@ -5,6 +5,8 @@ class EntrySearch
   attribute :search, :string
   attribute :amount, :string
   attribute :amount_operator, :string
+  attribute :amount_min, :string
+  attribute :amount_max, :string
   attribute :types, :string
   attribute :status, array: true
   attribute :accounts, array: true
@@ -32,21 +34,33 @@ class EntrySearch
       query
     end
 
-    def apply_amount_filter(scope, amount, amount_operator)
-      return scope if amount.blank? || amount_operator.blank?
+    def apply_amount_filter(scope, amount, amount_operator, amount_min: nil, amount_max: nil)
+      return scope if amount_operator.blank?
 
       query = scope
 
       case amount_operator
       when "equal"
+        return scope if amount.blank?
         query = query.where("ABS(ABS(entries.amount) - ?) <= 0.01", amount.to_f.abs)
       when "less"
+        return scope if amount.blank?
         query = query.where("ABS(entries.amount) < ?", amount.to_f.abs)
       when "greater"
+        return scope if amount.blank?
         query = query.where("ABS(entries.amount) > ?", amount.to_f.abs)
+      when "between"
+        return scope if amount_min.blank? || amount_max.blank?
+
+        lower, upper = [ BigDecimal(amount_min).abs, BigDecimal(amount_max).abs ].sort
+        query = query.where("ABS(entries.amount) BETWEEN ? AND ?", lower, upper)
+      else
+        return scope
       end
 
       query
+    rescue ArgumentError
+      scope
     end
 
     def apply_accounts_filter(scope, accounts, account_ids)
@@ -98,7 +112,7 @@ class EntrySearch
     query = scope.joins(:account)
     query = self.class.apply_search_filter(query, search)
     query = self.class.apply_date_filters(query, start_date, end_date)
-    query = self.class.apply_amount_filter(query, amount, amount_operator)
+    query = self.class.apply_amount_filter(query, amount, amount_operator, amount_min: amount_min, amount_max: amount_max)
     query = self.class.apply_accounts_filter(query, accounts, account_ids)
     query = self.class.apply_status_filter(query, status)
     query
