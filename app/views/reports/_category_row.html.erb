@@ -11,7 +11,7 @@
 %>
 
 <tr data-category="category-<%= item[:category_id] %>"
-    class="text-secondary text-sm <%= show_border ? "table-divider" : "" %> <%= clickable ? "relative group/category-row" : "" %>">
+    class="text-secondary text-sm <%= show_border ? "table-divider" : "" %> <%= clickable ? "group/category-row" : "" %>">
   <td colspan="2" class="py-3 px-4 lg:px-6 <%= is_sub ? "pl-7 lg:pl-9" : "" %>">
     <div class="flex items-center gap-2">
       <% if is_sub %>
@@ -38,11 +38,11 @@
         ) %>
       <% end %>
       <% if clickable %>
-        <%# Stretched link covers the full row (mirrors dashboard outflows).
-            `before:absolute before:inset-0` is positioned against the relative <tr>. %>
+        <%# Keep the link limited to the category name. An absolute pseudo-element
+            on a table row can cover the entire report page in some browsers. %>
         <%= link_to item[:category_name],
               transactions_href,
-              class: "font-medium text-primary hover:underline before:absolute before:inset-0 before:content-['']",
+              class: "font-medium text-primary hover:underline",
               data: { turbo_frame: "_top", turbo_prefetch: false } %>
       <% else %>
         <span class="font-medium text-primary">
