@@ -1,10 +1,14 @@
 <%# locals: (split_group:) %>
 <div class="split-group">
   <%= render "transactions/split_parent_row", entry: split_group.parent %>
-  <% split_group.children.each do |child_entry| %>
+  <% unless split_group.children.empty? %>
+    <div class="block border-b-[0.2px] border-[var(--color-container-inset)] lg:ml-[25%]"></div>
+  <% end %>
+  <% split_group.children.each_with_index do |child_entry, index| %>
     <% if child_entry.entryable.present? %>
       <%= render partial: child_entry.entryable.to_partial_path,
                 locals: { entry: child_entry, in_split_group: true } %>
+      <div class="block border-b-[0.2px] border-[var(--color-container-inset)] <%= "lg:ml-[25%]" unless index == split_group.children.size - 1 %>"></div>
     <% end %>
   <% end %>
 </div>

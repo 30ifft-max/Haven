@@ -4,7 +4,7 @@
 <%= turbo_frame_tag dom_id(entry) do %>
   <%= turbo_frame_tag dom_id(transaction) do %>
     <div class="group flex lg:grid lg:grid-cols-12 items-center text-primary text-sm font-medium p-3 lg:p-4 lg:py-2">
-      <div class="pr-4 lg:pr-10 flex items-center gap-3 lg:gap-4 col-span-3 min-w-0">
+      <div class="pr-4 lg:pr-10 flex flex-1 min-w-0 items-center gap-3 lg:gap-4 col-span-3">
         <%= check_box_tag dom_id(entry, "selection"),
             disabled: transaction.transfer.present?,
             class: "checkbox checkbox--light hidden size-3.5 shrink-0 p-0",
@@ -15,10 +15,6 @@
               action: "bulk-select#toggleRowSelection",
               checkbox_toggle_target: "selectionEntry"
             } %>
-
-        <div class="flex md:hidden items-center gap-1 col-span-2 relative shrink-0">
-          <%= render "transactions/transaction_category", transaction: transaction, variant: "mobile", in_split_group: in_split_group %>
-        </div>
 
         <div class="max-w-full min-w-0 <%= "opacity-50 text-secondary" if entry.excluded %>">
           <%= content_tag :div, class: ["flex items-center gap-3 lg:gap-4"] do %>
@@ -133,20 +129,18 @@
                       <% end %>
                     </span>
                   <% else %>
-                    <% if transaction.merchant&.present? %>
-                      <span class="lg:hidden truncate"><%= transaction.merchant.name %> • </span>
-                    <% end %>
-                    <span class="text-secondary lg:hidden">
-                      <%= link_to entry.account.name,
-                          account_path(entry.account, tab: "transactions"),
-                          data: { turbo_frame: "_top" },
-                          class: "hover:underline" %>
-                    </span>
                     <div class="flex min-w-0 items-center gap-1">
                       <%= render "categories/category_name_mobile", transaction: transaction %>
+                      <span class="text-secondary lg:hidden">•</span>
                       <% if transaction.merchant&.present? %>
-                        <span class="lg:hidden min-w-0 truncate">• <%= transaction.merchant.name %></span>
+                        <span class="lg:hidden min-w-0 truncate"><%= transaction.merchant.name %> •</span>
                       <% end %>
+                      <span class="text-secondary lg:hidden truncate">
+                        <%= link_to entry.account.name,
+                            account_path(entry.account, tab: "transactions"),
+                            data: { turbo_frame: "_top" },
+                            class: "hover:underline" %>
+                      </span>
                     </div>
                   <% end %>
                 </div>
@@ -164,7 +158,7 @@
         <span class="truncate"><%= transaction.transfer? ? (transaction.loan_payment? ? t("transactions.show.loan_payment") : t("transactions.show.transfer")) : (transaction.merchant&.name || "—") %></span>
       </div>
 
-      <div class="hidden md:flex min-w-0 items-center gap-1 col-span-2">
+      <div class="hidden lg:flex min-w-0 items-center gap-1 col-span-2">
         <% if entry.account.supports_trades? && !transaction.transfer? %>
           <%# For investment/crypto accounts, show activity label instead of category %>
           <%= render "investment_activity/quick_edit_badge", entry: entry, entryable: transaction %>
@@ -173,7 +167,7 @@
         <% end %>
       </div>
 
-      <div class="hidden lg:flex min-w-0 items-center col-span-2 text-secondary">
+      <div class="hidden lg:flex min-w-0 items-center col-span-3 text-secondary">
         <% if transaction.transfer? && transaction.transfer.present? %>
           <div class="flex min-w-0 flex-col gap-0.5 leading-tight">
             <%= link_to transaction.transfer.outflow_transaction.entry.account.name,
@@ -190,7 +184,7 @@
         <% end %>
       </div>
 
-      <div class="w-full shrink-0 col-span-4 lg:col-span-3 ml-auto flex items-center justify-end gap-2 whitespace-nowrap justify-self-end lg:mr-0 lg:pr-0 <%= "opacity-50" if entry.excluded %>">
+      <div class="w-auto lg:w-full shrink-0 col-span-4 lg:col-span-2 ml-auto mr-1 lg:mr-0 flex items-center justify-end gap-2 whitespace-nowrap justify-self-end lg:pr-0 <%= "opacity-50" if entry.excluded %>">
         <% amount_text = transaction.transfer? && view_ctx == "global" ? "+/- #{format_money(entry.amount_money.abs, format: "%n")}" : format_money(-entry.amount_money, format: "%n") %>
         <%= content_tag :p,
             safe_join([

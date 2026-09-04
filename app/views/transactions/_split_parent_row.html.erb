@@ -1,7 +1,7 @@
 <%# locals: (entry:) %>
 <% transaction = entry.entryable %>
 
-<div class="group flex lg:grid lg:grid-cols-12 items-center text-sm font-medium p-3 lg:p-4 opacity-50 text-secondary">
+<div class="group flex lg:grid lg:grid-cols-12 items-center text-sm font-medium p-3 lg:p-4 lg:py-2 opacity-50 text-secondary">
   <div class="pr-4 lg:pr-10 flex items-center gap-3 lg:gap-4 col-span-3 min-w-0">
     <div class="truncate flex-shrink">
       <%= link_to entry.name,
@@ -20,14 +20,14 @@
     </div>
   </div>
 
-  <div class="hidden lg:flex items-center gap-2 col-span-2 text-secondary">
+  <div class="hidden lg:flex items-center gap-2 col-span-1 text-secondary">
     <%= render "transactions/status", entry: entry, transaction: transaction, show_split: false %>
   </div>
 
   <%# Split children own merchant, category, and account detail. %>
   <div class="hidden lg:flex col-span-1"></div>
   <div class="hidden md:flex col-span-2"></div>
-  <div class="hidden lg:flex col-span-2"></div>
+  <div class="hidden lg:flex col-span-3"></div>
 
   <div class="shrink-0 col-span-4 lg:col-span-2 ml-auto flex items-center justify-end gap-2">
     <%= content_tag :p, format_money(-entry.amount_money), class: "privacy-sensitive" %>

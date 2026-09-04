@@ -1,0 +1,71 @@
+<%# locals: (form:) %>
+<% quick_ranges = {
+  "last_7_days" => [ Date.current - 7.days, Date.current ],
+  "last_14_days" => [ Date.current - 14.days, Date.current ],
+  "last_30_days" => [ Date.current - 30.days, Date.current ],
+  "this_month" => [ Date.current.beginning_of_month, Date.current ],
+  "last_month" => [ Date.current.last_month.beginning_of_month, Date.current.last_month.end_of_month ],
+  "this_year" => [ Date.current.beginning_of_year, Date.current ],
+  "last_year" => [ Date.current.last_year.beginning_of_year, Date.current.last_year.end_of_year ]
+} %>
+<% today = Date.current %>
+
+<div id="transaction-date-menu" class="flex h-[272px] w-full md:w-[400px]" data-controller="transaction-date-filter">
+  <div class="flex w-28 shrink-0 flex-col justify-between border-r border-secondary px-1 py-1.5">
+    <% quick_ranges.each do |key, (start_date, end_date)| %>
+      <% label = t("transactions.searches.date_menu.quick_ranges.#{key}") %>
+      <button type="button"
+              class="w-full rounded-md px-2 py-1.5 text-left text-sm text-secondary hover:bg-container-inset-hover hover:text-primary"
+              data-action="click->transaction-date-filter#selectQuick"
+              data-transaction-date-filter-start-value="<%= start_date %>"
+              data-transaction-date-filter-end-value="<%= end_date %>"
+              data-transaction-date-filter-label-value="<%= label %>"
+              data-transaction-date-filter-target="quick">
+        <%= label %>
+      </button>
+    <% end %>
+  </div>
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <div class="flex grow items-center p-5">
+      <div class="w-full space-y-5">
+        <div>
+          <div class="mb-2 flex h-7 items-center gap-1">
+            <%= form.label :start_date, t("transactions.searches.filters.date_filter.start_date"), class: "text-base font-medium text-primary" %>
+            <%= render DS::Button.new(variant: "icon", icon: "x", size: "sm", aria_label: t("transactions.searches.date_menu.clear"), data: { action: "click->transaction-date-filter#clearStart" }) %>
+          </div>
+          <div class="flex items-center gap-1">
+            <%= form.hidden_field :start_date, value: @q[:start_date], data: { transaction_date_filter_target: "startDate" } %>
+            <input id="start-date-year" type="text" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="<%= today.strftime("%Y") %>" class="w-16 rounded-md border border-secondary bg-container px-1 py-2 text-center text-sm text-primary placeholder:text-secondary outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300" data-transaction-date-filter-target="startYear" data-action="input->transaction-date-filter#updateStartDate keydown->transaction-date-filter#adjustStartDate">
+            <span class="text-secondary">-</span>
+            <input id="start-date-month" type="text" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="<%= today.strftime("%m") %>" class="w-11 rounded-md border border-secondary bg-container px-1 py-2 text-center text-sm text-primary placeholder:text-secondary outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300" data-transaction-date-filter-target="startMonth" data-action="input->transaction-date-filter#updateStartDate keydown->transaction-date-filter#adjustStartDate">
+            <span class="text-secondary">-</span>
+            <input id="start-date-day" type="text" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="<%= today.strftime("%d") %>" class="w-11 rounded-md border border-secondary bg-container px-1 py-2 text-center text-sm text-primary placeholder:text-secondary outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300" data-transaction-date-filter-target="startDay" data-action="input->transaction-date-filter#updateStartDate keydown->transaction-date-filter#adjustStartDate">
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-2 flex h-7 items-center gap-1">
+            <%= form.label :end_date, t("transactions.searches.filters.date_filter.end_date"), class: "text-base font-medium text-primary" %>
+            <%= render DS::Button.new(variant: "icon", icon: "x", size: "sm", aria_label: t("transactions.searches.date_menu.clear"), data: { action: "click->transaction-date-filter#clearEnd" }) %>
+          </div>
+          <div class="flex items-center gap-1">
+            <%= form.hidden_field :end_date, value: @q[:end_date], data: { transaction_date_filter_target: "endDate" } %>
+            <input id="end-date-year" type="text" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="<%= today.strftime("%Y") %>" class="w-16 rounded-md border border-secondary bg-container px-1 py-2 text-center text-sm text-primary placeholder:text-secondary outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300" data-transaction-date-filter-target="endYear" data-action="input->transaction-date-filter#updateEndDate keydown->transaction-date-filter#adjustEndDate">
+            <span class="text-secondary">-</span>
+            <input id="end-date-month" type="text" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="<%= today.strftime("%m") %>" class="w-11 rounded-md border border-secondary bg-container px-1 py-2 text-center text-sm text-primary placeholder:text-secondary outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300" data-transaction-date-filter-target="endMonth" data-action="input->transaction-date-filter#updateEndDate keydown->transaction-date-filter#adjustEndDate">
+            <span class="text-secondary">-</span>
+            <input id="end-date-day" type="text" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="<%= today.strftime("%d") %>" class="w-11 rounded-md border border-secondary bg-container px-1 py-2 text-center text-sm text-primary placeholder:text-secondary outline-none focus-visible:ring-2 focus-visible:ring-alpha-black-300" data-transaction-date-filter-target="endDay" data-action="input->transaction-date-filter#updateEndDate keydown->transaction-date-filter#adjustEndDate">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between border-t border-secondary p-3">
+      <%= render DS::Button.new(text: t("transactions.searches.date_menu.clear"), type: "button", variant: "outline", size: "sm", data: { action: "click->transaction-date-filter#clearAll" }) %>
+      <div class="flex gap-2">
+        <%= render DS::Button.new(text: t("transactions.searches.menu.apply"), type: :submit) %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -30,7 +30,8 @@ class TransactionsTest < ApplicationSystemTestCase
   end
 
   test "can search for a transaction" do
-    assert_selector "h1", text: "Transactions"
+    assert_no_selector "h1", text: "Transactions"
+    assert_selector "#transaction-date-button", text: "Date"
 
     within "form#transactions-search" do
       fill_in "Search transactions ...", with: @transaction.name
@@ -39,9 +40,7 @@ class TransactionsTest < ApplicationSystemTestCase
 
     assert_selector "#" + dom_id(@transaction), count: 1
 
-    within "#transaction-search-filters" do
-      assert_text @transaction.name
-    end
+    assert_no_selector "#transaction-search-filters"
   end
 
   test "can open filters and apply one or more" do
@@ -56,10 +55,7 @@ class TransactionsTest < ApplicationSystemTestCase
 
     assert_selector "#" + dom_id(@transaction), count: 1
 
-    within "#transaction-search-filters" do
-      assert_text @transaction.account.name
-      assert_text @transaction.transaction.category.name
-    end
+    assert_no_selector "#transaction-search-filters"
   end
 
   test "can filter uncategorized transactions" do
@@ -97,10 +93,6 @@ class TransactionsTest < ApplicationSystemTestCase
       click_button "Account"
       check(account.name)
 
-      click_button "Date"
-      fill_in "q_start_date", with: 10.days.ago.to_date
-      fill_in "q_end_date", with: 1.day.ago.to_date
-
       click_button "Type"
       check("Income")
 
@@ -127,17 +119,19 @@ class TransactionsTest < ApplicationSystemTestCase
 
     assert_text "No entries found"
 
-    # Remove all filters by clicking their X buttons
-    # Get all the filter buttons at once to avoid stale elements
-    filter_count = page.all("ul#transaction-search-filters li button").count
+    assert_no_selector "#transaction-search-filters"
+  end
 
-    # Click each one with a small delay to let Turbo update
-    filter_count.times do
-      page.all("ul#transaction-search-filters li button").first.click
-      sleep 0.1
+  test "can apply a quick date range" do
+    find("#transaction-date-button").click
+
+    within "#transaction-date-menu" do
+      click_button "This month"
+      click_button "Apply"
     end
 
-    assert_text @transaction.name
+    assert_selector "#transaction-date-button", text: "This month"
+    assert_selector "#" + dom_id(@transaction), count: 1
   end
 
   test "can select and deselect entire page of transactions" do

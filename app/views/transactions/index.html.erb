@@ -1,8 +1,6 @@
-<div class="space-y-4 pb-6 lg:pb-12 flex flex-col [&_turbo-frame:focus]:outline-none [&_turbo-frame:focus]:ring-0 [&_turbo-frame:focus-visible]:outline-none [&_turbo-frame:focus-visible]:ring-0" data-controller="overview-toggle checkbox-toggle">
-  <header class="flex justify-between items-center text-primary font-medium">
-    <h1 class="text-xl"><%= t(".title") %></h1>
-    <div class="flex items-center gap-5">
-      <div class="flex items-center gap-2">
+<div class="relative pb-6 lg:pb-12 flex flex-col [&_turbo-frame:focus]:outline-none [&_turbo-frame:focus]:ring-0 [&_turbo-frame:focus-visible]:outline-none [&_turbo-frame:focus-visible]:ring-0" data-controller="overview-toggle checkbox-toggle">
+  <header class="absolute right-0 top-0 z-10 flex items-center text-primary font-medium">
+    <div class="flex items-center gap-2">
         <%= render DS::Menu.new do |menu| %>
           <% menu.with_item(variant: "link", text: t(".new_rule"), href: new_rule_path(resource_type: "transaction"), icon: "plus", data: { turbo_frame: :modal }) %>
           <% menu.with_item(variant: "link", text: t(".edit_rules"), href: rules_path, icon: "git-branch", data: { turbo_frame: :_top }) %>
@@ -15,16 +13,6 @@
             <% menu.with_item(variant: "link", text: t(".categorize_button", count: @uncategorized_count), href: transactions_categorize_path, icon: "tag", data: { turbo_frame: :_top }) %>
           <% end %>
         <% end %>
-
-        <div class="hidden md:flex">
-          <%= render DS::Link.new(
-            text: t(".import"),
-            icon: "download",
-            variant: "outline",
-            href: new_import_path,
-            frame: :modal,
-          ) %>
-        </div>
 
         <%= render DS::Link.new(
             text: t(".new_transaction"),
@@ -42,19 +30,22 @@
             frame: :modal,
             class: "rounded-full md:hidden"
           ) %>
-      </div>
     </div>
   </header>
 
-  <div class="flex items-center justify-between gap-3">
-    <%= render "transactions/searches/search" %>
-    <%= render DS::Button.new(id: "transaction-summary-button", text: t("transactions.show.summary", default: "概览"), type: "button", variant: "outline", icon: "chart-no-axes-column", aria: { controls: "transaction-summary", expanded: "false" }, data: { action: "overview-toggle#toggle", overview_toggle_target: "button" }) %>
-  </div>
-
-  <div id="transaction-summary" class="hidden" data-overview-toggle-target="panel">
-    <%= render "summary", totals: @search.totals %>
-  </div>
   <% if Current.family.recurring_transactions_disabled? %>
+    <div id="transaction-summary" class="hidden mb-4" data-overview-toggle-target="panel">
+      <%= render "summary", totals: @search.totals %>
+    </div>
+    <div class="mt-12 mb-4 flex items-start justify-between gap-3 [&_#transaction-search-filters]:mb-0 [&_#transactions-search>div]:mb-0">
+      <div class="flex shrink-0 items-center gap-2">
+        <%= render DS::Button.new(id: "toggle-checkboxes-button", text: t("transactions.searches.form.select", default: "选择"), type: "button", variant: "outline", icon: "list-todo", class: "[&>span]:hidden lg:[&>span]:inline-flex", data: { action: "click->checkbox-toggle#toggle", checkbox_toggle_target: "toggleButton" }) %>
+        <%= render DS::Button.new(id: "transaction-summary-button", text: t("transactions.show.summary", default: "概览"), type: "button", variant: "outline", icon: "chart-no-axes-column", class: "[&>span]:hidden lg:[&>span]:inline-flex", aria: { controls: "transaction-summary", expanded: "false" }, data: { action: "overview-toggle#toggle", overview_toggle_target: "button" }) %>
+      </div>
+      <div class="min-w-0 shrink-0">
+        <%= render "transactions/searches/search" %>
+      </div>
+    </div>
     <%= render "transactions/list", transactions: @transactions, projected_recurring: @projected_recurring, q: params[:q], pagy: @pagy %>
     <div class="pt-4">
       <%= render "shared/pagination", pagy: @pagy %>
@@ -68,7 +59,19 @@
       <% end %>
 
       <% tabs.with_panel(tab_id: "transactions") do %>
-        <div class="bg-container rounded-xl shadow-border-xs focus:outline-none focus:ring-0 focus-within:outline-none focus-within:ring-0">
+        <div id="transaction-summary" class="hidden mb-4" data-overview-toggle-target="panel">
+          <%= render "summary", totals: @search.totals %>
+        </div>
+        <div class="mb-4 flex items-start justify-between gap-3 [&_#transaction-search-filters]:mb-0 [&_#transactions-search>div]:mb-0">
+          <div class="flex shrink-0 items-center gap-2">
+            <%= render DS::Button.new(id: "toggle-checkboxes-button", text: t("transactions.searches.form.select", default: "选择"), type: "button", variant: "outline", icon: "list-todo", class: "[&>span]:hidden lg:[&>span]:inline-flex", data: { action: "click->checkbox-toggle#toggle", checkbox_toggle_target: "toggleButton" }) %>
+            <%= render DS::Button.new(id: "transaction-summary-button", text: t("transactions.show.summary", default: "概览"), type: "button", variant: "outline", icon: "chart-no-axes-column", class: "[&>span]:hidden lg:[&>span]:inline-flex", aria: { controls: "transaction-summary", expanded: "false" }, data: { action: "overview-toggle#toggle", overview_toggle_target: "button" }) %>
+          </div>
+          <div class="min-w-0 shrink-0">
+            <%= render "transactions/searches/search" %>
+          </div>
+        </div>
+        <div class="bg-container rounded-xl overflow-hidden shadow-border-xs focus:outline-none focus:ring-0 focus-within:outline-none focus-within:ring-0">
           <%= render "transactions/list", transactions: @transactions, projected_recurring: @projected_recurring, q: params[:q], pagy: @pagy %>
         </div>
         <div class="pt-4">
