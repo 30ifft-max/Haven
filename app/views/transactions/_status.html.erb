@@ -5,11 +5,31 @@
       <% tags_tooltip_id = dom_id(entry, "tags-tooltip") %>
       <span data-controller="DS--tooltip" data-DS--tooltip-placement-value="left" data-DS--tooltip-offset-value="10" class="inline-flex">
         <button type="button" class="inline-flex size-5 items-center justify-center rounded focus-ring" aria-describedby="<%= tags_tooltip_id %>">
-        <span class="grid grid-cols-2 gap-0.5">
-          <% transaction.tags.first(4).each do |tag| %>
-            <span class="size-1.5 rounded-full" style="background-color: <%= tag&.color.presence || "var(--color-primary)" %>"></span>
-          <% end %>
-        </span>
+        <% tags = transaction.tags.first(4) %>
+        <% if tags.one? %>
+          <span class="flex items-center justify-center">
+            <span class="size-1.5 rounded-full" style="background-color: <%= tags.first.color.presence || "var(--color-primary)" %>"></span>
+          </span>
+        <% elsif tags.size == 2 %>
+          <span class="flex items-center justify-center gap-0.5">
+            <% tags.each do |tag| %>
+              <span class="size-1.5 rounded-full" style="background-color: <%= tag.color.presence || "var(--color-primary)" %>"></span>
+            <% end %>
+          </span>
+        <% elsif tags.size == 3 %>
+          <span class="grid grid-cols-2 gap-0.5">
+            <span class="col-span-2 justify-self-center size-1.5 rounded-full" style="background-color: <%= tags[0].color.presence || "var(--color-primary)" %>"></span>
+            <% tags.drop(1).each do |tag| %>
+              <span class="size-1.5 rounded-full" style="background-color: <%= tag.color.presence || "var(--color-primary)" %>"></span>
+            <% end %>
+          </span>
+        <% else %>
+          <span class="grid grid-cols-2 gap-0.5">
+            <% tags.each do |tag| %>
+              <span class="size-1.5 rounded-full" style="background-color: <%= tag.color.presence || "var(--color-primary)" %>"></span>
+            <% end %>
+          </span>
+        <% end %>
         </button>
         <div role="tooltip" id="<%= tags_tooltip_id %>" data-DS--tooltip-target="tooltip" class="hidden absolute z-50 rounded-xl bg-surface px-3 py-2 text-sm shadow-lg">
           <div class="relative space-y-1.5 font-medium text-primary">
@@ -25,7 +45,7 @@
     <% end %>
   </div>
 
-  <div class="order-3 flex size-6 shrink-0 items-center justify-center">
+  <div class="order-3 mr-2 flex size-6 shrink-0 items-center justify-center">
     <% if entry.notes.present? %>
       <% notes_tooltip_id = dom_id(entry, "notes-tooltip") %>
       <span data-controller="DS--tooltip" data-DS--tooltip-placement-value="top" data-DS--tooltip-offset-value="10" class="inline-flex">

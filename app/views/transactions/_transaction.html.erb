@@ -3,7 +3,7 @@
 <% transaction = entry.entryable %>
 <%= turbo_frame_tag dom_id(entry) do %>
   <%= turbo_frame_tag dom_id(transaction) do %>
-    <div class="group flex lg:grid lg:grid-cols-12 items-center text-primary text-sm font-medium p-3 lg:p-4">
+    <div class="group flex lg:grid lg:grid-cols-12 items-center text-primary text-sm font-medium p-3 lg:p-4 lg:py-2">
       <div class="pr-4 lg:pr-10 flex items-center gap-3 lg:gap-4 col-span-3 min-w-0">
         <%= check_box_tag dom_id(entry, "selection"),
             disabled: transaction.transfer.present?,
@@ -160,7 +160,7 @@
         <%= render "transactions/status", entry: entry, transaction: transaction %>
       </div>
 
-      <div class="hidden lg:flex min-w-0 items-center col-span-2 text-secondary">
+      <div class="hidden lg:flex min-w-0 items-center ml-0 col-span-1 text-secondary">
         <span class="truncate"><%= transaction.transfer? ? (transaction.loan_payment? ? t("transactions.show.loan_payment") : t("transactions.show.transfer")) : (transaction.merchant&.name || "—") %></span>
       </div>
 
@@ -190,7 +190,7 @@
         <% end %>
       </div>
 
-      <div class="shrink-0 col-span-4 lg:col-span-2 ml-auto flex items-center justify-end gap-2 <%= "opacity-50" if entry.excluded %>">
+      <div class="w-full shrink-0 col-span-4 lg:col-span-3 ml-auto flex items-center justify-end gap-2 whitespace-nowrap justify-self-end lg:mr-0 lg:pr-0 <%= "opacity-50" if entry.excluded %>">
         <% amount_text = transaction.transfer? && view_ctx == "global" ? "+/- #{format_money(entry.amount_money.abs, format: "%n")}" : format_money(-entry.amount_money, format: "%n") %>
         <%= content_tag :p,
             safe_join([
@@ -198,7 +198,7 @@
               tag.span(" · ", class: "text-secondary"),
               tag.span(entry.currency, class: "text-secondary")
             ]),
-            class: "privacy-sensitive" %>
+            class: "privacy-sensitive w-full text-right" %>
       </div>
 
 
