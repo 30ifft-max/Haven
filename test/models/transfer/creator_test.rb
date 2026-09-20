@@ -43,6 +43,24 @@ class Transfer::CreatorTest < ActiveSupport::TestCase
     assert_equal "Transfer from #{@source_account.name}", inflow.entry.name
   end
 
+  test "uses the supplied sort time for both sides of a transfer" do
+    creator = Transfer::Creator.new(
+      family: @family,
+      source_account_id: @source_account.id,
+      destination_account_id: @destination_account.id,
+      date: @date,
+      sort_time: "05:32",
+      amount: @amount
+    )
+
+    transfer = creator.create
+
+    assert_equal [ "05:32", "05:32" ], [
+      transfer.outflow_transaction.entry,
+      transfer.inflow_transaction.entry
+    ].map { |entry| entry.sort_time.strftime("%H:%M") }
+  end
+
   test "creates basic transfer between depository accounts" do
     other_depository = @family.accounts.create!(name: "Savings", balance: 1000, currency: "USD", accountable: Depository.new)
 

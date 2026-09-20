@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_20_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -738,7 +738,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.string "plaid_id"
     t.datetime "reconciled_at"
     t.uuid "reconciled_by_statement_id"
+    t.time "sort_time", default: "2000-01-01 00:00:00", null: false
     t.string "source"
+    t.integer "split_order"
     t.datetime "updated_at", null: false
     t.boolean "user_modified", default: false, null: false
     t.index "lower((name)::text)", name: "index_entries_on_lower_name"
@@ -748,10 +750,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["account_id", "source", "external_id"], name: "index_entries_on_account_source_and_external_id", unique: true, where: "((external_id IS NOT NULL) AND (source IS NOT NULL))"
     t.index ["account_id"], name: "index_entries_on_account_id"
     t.index ["currency", "amount", "date", "account_id"], name: "index_entries_on_transfer_match_lookup", where: "(((entryable_type)::text = 'Transaction'::text) AND (excluded = false))"
+    t.index ["date", "sort_time", "created_at", "id"], name: "index_entries_on_display_order"
     t.index ["date"], name: "index_entries_on_date"
     t.index ["entryable_type"], name: "index_entries_on_entryable_type"
     t.index ["import_id"], name: "index_entries_on_import_id"
     t.index ["import_locked"], name: "index_entries_on_import_locked_true", where: "(import_locked = true)"
+    t.index ["parent_entry_id", "split_order"], name: "index_entries_on_parent_and_split_order"
     t.index ["parent_entry_id"], name: "index_entries_on_parent_entry_id"
     t.index ["reconciled_by_statement_id"], name: "index_entries_on_reconciled_by_statement", where: "(reconciled_by_statement_id IS NOT NULL)"
     t.index ["user_modified"], name: "index_entries_on_user_modified_true", where: "(user_modified = true)"
@@ -935,9 +939,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["derivative_round_id"], name: "index_fft_derivative_allocations_on_derivative_round_id"
     t.index ["event_key"], name: "idx_fft_derivative_allocations_event_key", unique: true
     t.index ["security_id"], name: "index_fft_derivative_allocations_on_security_id"
-    t.check_constraint "(event_type::text = ANY (ARRAY['initial_lock'::character varying::text, 'close_release'::character varying::text])) AND derivative_round_id IS NULL OR (event_type::text = ANY (ARRAY['pending_lock'::character varying::text, 'settlement_release'::character varying::text, 'settlement_relock'::character varying::text])) AND derivative_round_id IS NOT NULL", name: "chk_fft_derivative_allocations_round"
-    t.check_constraint "(event_type::text = ANY (ARRAY['initial_lock'::character varying::text, 'pending_lock'::character varying::text, 'settlement_relock'::character varying::text])) AND amount_delta > 0::numeric OR (event_type::text = ANY (ARRAY['settlement_release'::character varying::text, 'close_release'::character varying::text])) AND amount_delta < 0::numeric", name: "chk_fft_derivative_allocations_sign"
-    t.check_constraint "event_type::text = ANY (ARRAY['initial_lock'::character varying::text, 'pending_lock'::character varying::text, 'settlement_release'::character varying::text, 'settlement_relock'::character varying::text, 'close_release'::character varying::text])", name: "chk_fft_derivative_allocations_event_type"
+    t.check_constraint "(event_type::text = ANY (ARRAY['initial_lock'::character varying, 'close_release'::character varying]::text[])) AND derivative_round_id IS NULL OR (event_type::text = ANY (ARRAY['pending_lock'::character varying, 'settlement_release'::character varying, 'settlement_relock'::character varying]::text[])) AND derivative_round_id IS NOT NULL", name: "chk_fft_derivative_allocations_round"
+    t.check_constraint "(event_type::text = ANY (ARRAY['initial_lock'::character varying, 'pending_lock'::character varying, 'settlement_relock'::character varying]::text[])) AND amount_delta > 0::numeric OR (event_type::text = ANY (ARRAY['settlement_release'::character varying, 'close_release'::character varying]::text[])) AND amount_delta < 0::numeric", name: "chk_fft_derivative_allocations_sign"
+    t.check_constraint "event_type::text = ANY (ARRAY['initial_lock'::character varying, 'pending_lock'::character varying, 'settlement_release'::character varying, 'settlement_relock'::character varying, 'close_release'::character varying]::text[])", name: "chk_fft_derivative_allocations_event_type"
   end
 
   create_table "fft_derivative_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -960,8 +964,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["quote_security_id"], name: "index_fft_derivative_batches_on_quote_security_id"
     t.check_constraint "asset_security_id <> quote_security_id", name: "chk_fft_derivative_batches_distinct_legs"
     t.check_constraint "initial_amount > 0::numeric", name: "chk_fft_derivative_batches_initial_amount"
-    t.check_constraint "initial_leg::text = ANY (ARRAY['asset'::character varying::text, 'quote'::character varying::text])", name: "chk_fft_derivative_batches_initial_leg"
-    t.check_constraint "purpose::text = ANY (ARRAY['accumulate'::character varying::text, 'cashflow'::character varying::text])", name: "chk_fft_derivative_batches_purpose"
+    t.check_constraint "initial_leg::text = ANY (ARRAY['asset'::character varying, 'quote'::character varying]::text[])", name: "chk_fft_derivative_batches_initial_leg"
+    t.check_constraint "purpose::text = ANY (ARRAY['accumulate'::character varying, 'cashflow'::character varying]::text[])", name: "chk_fft_derivative_batches_purpose"
     t.check_constraint "start_spot_price > 0::numeric", name: "chk_fft_derivative_batches_start_spot"
     t.check_constraint "status::text = 'active'::text AND closed_on IS NULL OR status::text = 'closed'::text AND closed_on IS NOT NULL", name: "chk_fft_derivative_batches_status"
   end
@@ -976,7 +980,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["derivative_round_id"], name: "index_fft_derivative_ledger_links_on_derivative_round_id"
     t.index ["entry_id"], name: "idx_fft_derivative_links_entry", unique: true
     t.index ["entry_id"], name: "index_fft_derivative_ledger_links_on_entry_id"
-    t.check_constraint "role::text = ANY (ARRAY['principal_disposition'::character varying::text, 'principal_acquisition'::character varying::text, 'yield_reinvestment'::character varying::text, 'yield_income'::character varying::text])", name: "chk_fft_derivative_ledger_links_role"
+    t.check_constraint "role::text = ANY (ARRAY['principal_disposition'::character varying, 'principal_acquisition'::character varying, 'yield_reinvestment'::character varying, 'yield_income'::character varying]::text[])", name: "chk_fft_derivative_ledger_links_role"
   end
 
   create_table "fft_derivative_rounds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1002,10 +1006,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["derivative_batch_id"], name: "index_fft_derivative_rounds_on_derivative_batch_id"
     t.index ["settlement_key"], name: "idx_fft_derivative_rounds_settlement_key", unique: true, where: "(settlement_key IS NOT NULL)"
     t.check_constraint "apy IS NULL OR apy >= 0::numeric", name: "chk_fft_derivative_rounds_apy"
-    t.check_constraint "direction::text = ANY (ARRAY['sell_high'::character varying::text, 'buy_low'::character varying::text])", name: "chk_fft_derivative_rounds_direction"
+    t.check_constraint "direction::text = ANY (ARRAY['sell_high'::character varying, 'buy_low'::character varying]::text[])", name: "chk_fft_derivative_rounds_direction"
     t.check_constraint "expires_on >= start_on", name: "chk_fft_derivative_rounds_dates"
     t.check_constraint "invested_amount > 0::numeric", name: "chk_fft_derivative_rounds_invested_amount"
-    t.check_constraint "status::text = 'pending'::text AND received_leg IS NULL AND received_amount IS NULL AND quote_to_ledger_rate IS NULL AND received_relocked IS NULL AND settled_on IS NULL AND settlement_key IS NULL OR status::text = 'settled'::text AND (received_leg::text = ANY (ARRAY['asset'::character varying::text, 'quote'::character varying::text])) AND received_amount > 0::numeric AND quote_to_ledger_rate > 0::numeric AND received_relocked IS NOT NULL AND settled_on IS NOT NULL AND settlement_key IS NOT NULL", name: "chk_fft_derivative_rounds_status"
+    t.check_constraint "status::text = 'pending'::text AND received_leg IS NULL AND received_amount IS NULL AND quote_to_ledger_rate IS NULL AND received_relocked IS NULL AND settled_on IS NULL AND settlement_key IS NULL OR status::text = 'settled'::text AND (received_leg::text = ANY (ARRAY['asset'::character varying, 'quote'::character varying]::text[])) AND received_amount > 0::numeric AND quote_to_ledger_rate > 0::numeric AND received_relocked IS NOT NULL AND settled_on IS NOT NULL AND settlement_key IS NOT NULL", name: "chk_fft_derivative_rounds_status"
     t.check_constraint "strike_price > 0::numeric", name: "chk_fft_derivative_rounds_strike_price"
   end
 
@@ -1025,11 +1029,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["created_by_id"], name: "index_fft_investment_activity_groups_on_created_by_id"
     t.index ["family_id"], name: "index_fft_investment_activity_groups_on_family_id"
     t.index ["voided_by_id"], name: "index_fft_investment_activity_groups_on_voided_by_id"
-    t.check_constraint "activity_kind::text = ANY (ARRAY['buy'::character varying::text, 'sell'::character varying::text, 'transfer'::character varying::text, 'contribution'::character varying::text, 'withdrawal'::character varying::text, 'dividend'::character varying::text, 'interest'::character varying::text, 'reinvestment'::character varying::text, 'fee'::character varying::text, 'tax'::character varying::text, 'exchange'::character varying::text, 'derivative'::character varying::text, 'opening'::character varying::text, 'special'::character varying::text, 'unclassified_cash'::character varying::text])", name: "chk_fft_activity_groups_kind"
+    t.check_constraint "activity_kind::text = ANY (ARRAY['buy'::character varying, 'sell'::character varying, 'transfer'::character varying, 'contribution'::character varying, 'withdrawal'::character varying, 'dividend'::character varying, 'interest'::character varying, 'reinvestment'::character varying, 'fee'::character varying, 'tax'::character varying, 'exchange'::character varying, 'derivative'::character varying, 'opening'::character varying, 'special'::character varying, 'unclassified_cash'::character varying]::text[])", name: "chk_fft_activity_groups_kind"
     t.check_constraint "status::text = 'active'::text AND voided_at IS NULL AND voided_by_id IS NULL AND void_reason IS NULL OR status::text = 'voided'::text AND voided_at IS NOT NULL AND void_reason IS NOT NULL", name: "chk_fft_activity_groups_void_state"
-    t.check_constraint "status::text = ANY (ARRAY['active'::character varying::text, 'voided'::character varying::text])", name: "chk_fft_activity_groups_status"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'voided'::character varying]::text[])", name: "chk_fft_activity_groups_status"
     t.check_constraint "time_precision::text = 'date'::text AND occurred_at IS NULL OR time_precision::text = 'exact'::text AND occurred_at IS NOT NULL", name: "chk_fft_activity_groups_time_value"
-    t.check_constraint "time_precision::text = ANY (ARRAY['date'::character varying::text, 'exact'::character varying::text])", name: "chk_fft_activity_groups_time_precision"
+    t.check_constraint "time_precision::text = ANY (ARRAY['date'::character varying, 'exact'::character varying]::text[])", name: "chk_fft_activity_groups_time_precision"
   end
 
   create_table "fft_investment_activity_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1041,7 +1045,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["activity_group_id", "component_role"], name: "idx_fft_activity_memberships_group_role", unique: true
     t.index ["entry_id"], name: "idx_fft_activity_memberships_entry", unique: true
     t.index ["entry_id"], name: "index_fft_investment_activity_memberships_on_entry_id"
-    t.check_constraint "component_role::text = ANY (ARRAY['primary'::character varying::text, 'transfer_outflow'::character varying::text, 'transfer_inflow'::character varying::text, 'source_fee'::character varying::text, 'destination_fee'::character varying::text, 'income'::character varying::text, 'purchase'::character varying::text, 'exchange_outflow'::character varying::text, 'exchange_inflow'::character varying::text, 'special'::character varying::text])", name: "chk_fft_activity_memberships_role"
+    t.check_constraint "component_role::text = ANY (ARRAY['primary'::character varying, 'transfer_outflow'::character varying, 'transfer_inflow'::character varying, 'source_fee'::character varying, 'destination_fee'::character varying, 'income'::character varying, 'purchase'::character varying, 'exchange_outflow'::character varying, 'exchange_inflow'::character varying, 'special'::character varying]::text[])", name: "chk_fft_activity_memberships_role"
   end
 
   create_table "fft_investment_activity_revisions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1053,7 +1057,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.jsonb "snapshot", default: {}, null: false
     t.index ["activity_group_id"], name: "index_fft_investment_activity_revisions_on_activity_group_id"
     t.index ["actor_id"], name: "index_fft_investment_activity_revisions_on_actor_id"
-    t.check_constraint "action::text = ANY (ARRAY['created'::character varying::text, 'corrected'::character varying::text, 'voided'::character varying::text])", name: "chk_fft_activity_revisions_action"
+    t.check_constraint "action::text = ANY (ARRAY['created'::character varying, 'corrected'::character varying, 'voided'::character varying]::text[])", name: "chk_fft_activity_revisions_action"
     t.check_constraint "char_length(reason) >= 1 AND char_length(reason) <= 1000", name: "chk_fft_activity_revisions_reason"
   end
 
@@ -1067,7 +1071,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["family_id", "security_id"], name: "idx_fft_asset_classifications_family_security", unique: true
     t.index ["family_id"], name: "index_fft_investment_asset_classifications_on_family_id"
     t.index ["security_id"], name: "index_fft_investment_asset_classifications_on_security_id"
-    t.check_constraint "classification::text = ANY (ARRAY['crypto_asset'::character varying::text, 'cash_equivalent'::character varying::text])", name: "chk_fft_asset_classifications_value"
+    t.check_constraint "classification::text = ANY (ARRAY['crypto_asset'::character varying, 'cash_equivalent'::character varying]::text[])", name: "chk_fft_asset_classifications_value"
     t.check_constraint "depeg_risk_visible = true", name: "chk_fft_asset_classifications_depeg_risk"
   end
 
@@ -1087,8 +1091,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["trade_id"], name: "index_fft_investment_operation_details_on_trade_id", unique: true
     t.check_constraint "cardinality(tags) <= 20", name: "chk_fft_operation_details_tags_count"
     t.check_constraint "exit_reason IS NULL OR char_length(exit_reason::text) <= 255", name: "chk_fft_operation_details_exit_reason_length"
-    t.check_constraint "plan_adherence IS NULL OR (plan_adherence::text = ANY (ARRAY['followed'::character varying::text, 'deviated'::character varying::text, 'not_applicable'::character varying::text]))", name: "chk_fft_operation_details_adherence"
-    t.check_constraint "position_side::text = ANY (ARRAY['long'::character varying::text, 'short'::character varying::text])", name: "chk_fft_operation_details_position_side"
+    t.check_constraint "plan_adherence IS NULL OR (plan_adherence::text = ANY (ARRAY['followed'::character varying, 'deviated'::character varying, 'not_applicable'::character varying]::text[]))", name: "chk_fft_operation_details_adherence"
+    t.check_constraint "position_side::text = ANY (ARRAY['long'::character varying, 'short'::character varying]::text[])", name: "chk_fft_operation_details_position_side"
     t.check_constraint "review_notes IS NULL OR char_length(review_notes) <= 10000", name: "chk_fft_operation_details_review_notes_length"
     t.check_constraint "stop_loss_price IS NULL OR stop_loss_price > 0::numeric", name: "chk_fft_operation_details_stop_positive"
     t.check_constraint "strategy IS NULL OR char_length(strategy::text) <= 255", name: "chk_fft_operation_details_strategy_length"
@@ -1150,7 +1154,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.check_constraint "char_length(name::text) <= 255", name: "chk_savings_goals_name_length"
     t.check_constraint "consumed_amount >= 0::numeric", name: "chk_goals_consumed_amount_non_negative"
     t.check_constraint "kind::text = ANY (ARRAY['one_off'::character varying, 'maintained'::character varying]::text[])", name: "chk_goals_kind_enum"
-    t.check_constraint "progress_basis::text = ANY (ARRAY['balance'::character varying::text, 'contributions'::character varying::text])", name: "chk_goals_progress_basis_enum"
+    t.check_constraint "progress_basis::text = ANY (ARRAY['balance'::character varying, 'contributions'::character varying]::text[])", name: "chk_goals_progress_basis_enum"
     t.check_constraint "state::text = ANY (ARRAY['active'::character varying::text, 'paused'::character varying::text, 'completed'::character varying::text, 'archived'::character varying::text])", name: "chk_savings_goals_state_enum"
     t.check_constraint "target_amount > 0::numeric", name: "chk_savings_goals_target_amount_positive"
     t.check_constraint "target_mode::text = ANY (ARRAY['fixed'::character varying, 'months_of_expenses'::character varying]::text[])", name: "chk_goals_target_mode_enum"
@@ -1462,8 +1466,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.index ["family_id", "dedup_key"], name: "index_insights_on_family_id_and_dedup_key", unique: true
     t.index ["family_id", "generated_at"], name: "index_insights_on_family_id_and_generated_at"
     t.index ["family_id", "status"], name: "index_insights_on_family_id_and_status"
-    t.check_constraint "priority::text = ANY (ARRAY['high'::character varying::text, 'medium'::character varying::text, 'low'::character varying::text])", name: "chk_insights_priority"
-    t.check_constraint "status::text = ANY (ARRAY['active'::character varying::text, 'read'::character varying::text, 'dismissed'::character varying::text, 'expired'::character varying::text])", name: "chk_insights_status"
+    t.check_constraint "priority::text = ANY (ARRAY['high'::character varying, 'medium'::character varying, 'low'::character varying]::text[])", name: "chk_insights_priority"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'read'::character varying, 'dismissed'::character varying, 'expired'::character varying]::text[])", name: "chk_insights_status"
   end
 
   create_table "investments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1883,7 +1887,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
     t.datetime "updated_at", null: false
     t.integer "year_built"
     t.index ["avm_last_synced_on"], name: "index_properties_on_avm_provider_sync", order: "NULLS FIRST", where: "(avm_provider IS NOT NULL)"
-    t.check_constraint "avm_provider IS NULL OR (avm_provider::text = ANY (ARRAY['rentcast'::character varying::text, 'realie'::character varying::text]))", name: "properties_avm_provider_check"
+    t.check_constraint "avm_provider IS NULL OR (avm_provider::text = ANY (ARRAY['rentcast'::character varying, 'realie'::character varying]::text[]))", name: "properties_avm_provider_check"
   end
 
   create_table "provider_request_counts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

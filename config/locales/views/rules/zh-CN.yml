@@ -18,6 +18,10 @@ zh-CN:
       all_past_and_future: 所有过去和未来的 %{resource}
       on_or_after: "%{resource} 在 %{date} 当日或之后"
     form:
+      if: 如果
+      for: 应用于
+      and: 并且
+      to: 设置为
       rule_name_label: 规则名称（可选）
       rule_name_placeholder: 为此规则输入名称
       add_condition: 添加条件
@@ -38,6 +42,10 @@ zh-CN:
       toggle_sort_direction: 切换排序方向
       no_rules_title: 还没有规则
       no_rules_description: 设置规则后，您每次账户同步时都可以对交易和其他数据执行操作。
+    new:
+      title: 新建%{resource}规则
+    resources:
+      transaction: 交易
     confirm:
       title: 确认更改
       title_with_name: 确认对“%{name}”的更改
@@ -52,6 +60,21 @@ zh-CN:
       confirm_changes: 确认更改
     actions:
       value_placeholder: 输入值
+      types:
+        set_transaction_category: 设置交易分类
+        set_transaction_tags: 添加交易标签
+        set_transaction_merchant: 设置交易商户
+        set_transaction_name: 设置交易名称
+        set_investment_activity_label: 设置投资活动标签
+        exclude_transaction: 从预算和报表中排除
+        set_as_transfer_or_payment: 设置为转账或还款
+        send_email_notification: 发送电子邮件通知
+        auto_categorize: 使用 AI 自动分类交易
+        auto_detect_merchants: 自动识别商户
+        auto_detect_merchants_ai: 使用 AI 自动识别商户（$$）
+      cost_na: "费用：不可用"
+      per_transactions: 每 %{count} 笔交易
+      no_llm_provider: 未配置 LLM 提供商
     update:
       success: 规则已更新
     destroy:
@@ -99,11 +122,33 @@ zh-CN:
       confirm_button: 重置缓存
       success: AI 缓存正在清除，这可能需要一点时间。
     condition_filters:
+      fields:
+        transaction_name: 交易名称
+        transaction_amount: 交易金额
+        transaction_type: 交易类型
+        transaction_merchant: 交易商户
+        transaction_category: 交易分类
+        transaction_tag: 交易标签
+        transaction_details: 交易详情
+        transaction_notes: 交易备注
+        transaction_account: 交易账户
       transaction_type:
         income: 收入
         expense: 支出
         transfer: 转账
         equal_to: 等于
+      operators:
+        contains: 包含
+        does_not_contain: 不包含
+        equal_to: 等于
+        is_equal_to: 等于
+        not_equal_to: 不等于
+        is_empty: 为空
+        is_not_empty: 不为空
+        greater_than: 大于
+        greater_or_equal_to: 大于或等于
+        less_than: 小于
+        less_than_or_equal_to: 小于或等于
   rule:
     conditions:
       condition_group:

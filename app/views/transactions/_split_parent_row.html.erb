@@ -1,9 +1,9 @@
 <%# locals: (entry:) %>
 <% transaction = entry.entryable %>
 
-<div class="group flex lg:grid lg:grid-cols-12 items-center text-sm font-medium p-3 lg:p-4 lg:py-2 opacity-50 text-secondary">
+<div class="group flex lg:grid lg:grid-cols-12 items-center text-sm font-medium p-3 lg:p-4 lg:py-2 text-secondary">
   <div class="pr-4 lg:pr-10 flex items-center gap-3 lg:gap-4 col-span-3 min-w-0">
-    <div class="truncate flex-shrink">
+    <div class="truncate flex-shrink opacity-50">
       <%= link_to entry.name,
           entry_path(entry),
           data: { turbo_frame: "drawer", turbo_prefetch: false },
@@ -11,16 +11,24 @@
     </div>
 
     <div class="flex items-center gap-1 flex-shrink-0">
-      <%= render DS::Pill.new(
-        label: t("transactions.split_parent_row.split_label"),
-        tone: :neutral,
-        marker: false,
-        icon: "split"
-      ) %>
+      <button type="button"
+              class="group/split-toggle inline-flex rounded-full focus-ring"
+              aria-expanded="false"
+              aria-label="<%= t("transactions.split_parent_row.split_label") %>"
+              data-split-group-toggle-target="button"
+              data-action="click->split-group-toggle#toggle">
+        <span class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-700 transition-colors group-hover/split-toggle:border-indigo-300 group-hover/split-toggle:bg-indigo-100 theme-dark:border-indigo-500/30 theme-dark:bg-indigo-500/10 theme-dark:text-indigo-200 theme-dark:group-hover/split-toggle:border-indigo-400/50 theme-dark:group-hover/split-toggle:bg-indigo-500/20">
+          <%= icon "split", size: "xs", color: "current" %>
+          <span><%= t("transactions.split_parent_row.split_label") %></span>
+          <span data-split-group-toggle-target="chevron" class="transition-transform duration-200">
+            <%= icon "chevron-down", size: "xs", color: "current" %>
+          </span>
+        </span>
+      </button>
     </div>
   </div>
 
-  <div class="hidden lg:flex items-center gap-2 col-span-1 text-secondary">
+  <div class="hidden lg:flex items-center gap-2 col-span-1 text-secondary opacity-50">
     <%= render "transactions/status", entry: entry, transaction: transaction, show_split: false %>
   </div>
 
@@ -29,7 +37,7 @@
   <div class="hidden md:flex col-span-2"></div>
   <div class="hidden lg:flex col-span-3"></div>
 
-  <div class="shrink-0 col-span-4 lg:col-span-2 ml-auto flex items-center justify-end gap-2">
+  <div class="shrink-0 col-span-4 lg:col-span-2 ml-auto flex items-center justify-end gap-2 opacity-50">
     <%= content_tag :p, format_money(-entry.amount_money), class: "privacy-sensitive" %>
   </div>
 </div>

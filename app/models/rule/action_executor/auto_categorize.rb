@@ -1,6 +1,6 @@
 class Rule::ActionExecutor::AutoCategorize < Rule::ActionExecutor
   def label
-    base_label = "Auto-categorize transactions with AI"
+    base_label = I18n.t("rules.actions.types.auto_categorize", default: "Auto-categorize transactions with AI")
 
     if rule.family.self_hoster?
       # Use the same provider determination logic as Family::AutoCategorizer
@@ -16,13 +16,13 @@ class Rule::ActionExecutor::AutoCategorize < Rule::ActionExecutor
         )
         suffix =
           if estimated_cost.nil?
-            " (cost: N/A)"
+            " (#{I18n.t("rules.actions.cost_na", default: "cost: N/A")})"
           else
-            " (~$#{sprintf('%.4f', estimated_cost)} per 20 transactions)"
+            " (~$#{sprintf('%.4f', estimated_cost)} #{I18n.t("rules.actions.per_transactions", count: 20, default: "per %{count} transactions")})"
           end
         "#{base_label}#{suffix}"
       else
-        "#{base_label} (no LLM provider configured)"
+        "#{base_label} (#{I18n.t("rules.actions.no_llm_provider", default: "no LLM provider configured")})"
       end
     else
       base_label

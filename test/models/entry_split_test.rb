@@ -23,6 +23,7 @@ class EntrySplitTest < ActiveSupport::TestCase
     assert_equal 2, children.size
     assert_equal 70, children.first.amount
     assert_equal 30, children.last.amount
+    assert_equal [ 0, 1 ], children.map(&:split_order)
     assert @entry.reload.excluded?
     assert @entry.split_parent?
   end

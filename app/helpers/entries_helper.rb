@@ -13,7 +13,9 @@ module EntriesHelper
         next if seen_parent_ids.include?(parent_id)
 
         seen_parent_ids.add(parent_id)
-        children = entries.select { |e| e.parent_entry_id == parent_id }
+        children = entries
+          .select { |e| e.parent_entry_id == parent_id }
+          .sort_by { |e| [ e.split_order.nil? ? 1 : 0, e.split_order || 0, e.created_at, e.id ] }
         result << SplitGroup.new(parent: split_parents[parent_id], children: children)
       else
         result << entry

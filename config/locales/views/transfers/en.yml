@@ -13,6 +13,7 @@ en:
       outgoing_fee: Outgoing transfer fee
       incoming_fee: Incoming transfer fee
       date: Date
+      sort_time: Sort time
       destination_amount: Destination amount
       destination_amount_display: "Destination amount: %{amount}"
       exchange_rate_display: "Exchange rate: %{rate}"

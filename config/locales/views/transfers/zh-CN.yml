@@ -8,6 +8,7 @@ zh-CN:
     form:
       amount: 金额
       date: 日期
+      sort_time: 排序时间
       expense: 支出
       from: 转出账户
       income: 收入

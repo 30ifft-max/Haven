@@ -43,6 +43,7 @@ class Entry < ApplicationRecord
   scope :chronological, -> {
     order(
       date: :asc,
+      sort_time: :asc,
       Arel.sql("CASE WHEN entries.entryable_type = 'Valuation' THEN 1 ELSE 0 END") => :asc,
       created_at: :asc,
       id: :asc
@@ -52,6 +53,7 @@ class Entry < ApplicationRecord
   scope :reverse_chronological, -> {
     order(
       date: :desc,
+      sort_time: :desc,
       Arel.sql("CASE WHEN entries.entryable_type = 'Valuation' THEN 1 ELSE 0 END") => :desc,
       created_at: :desc,
       id: :desc
@@ -448,7 +450,7 @@ class Entry < ApplicationRecord
     end
 
     self.class.transaction do
-      children = splits.map do |split_attrs|
+      children = splits.each_with_index.map do |split_attrs, split_order|
         child_transaction = Transaction.new(
           category_id: split_attrs[:category_id],
           merchant_id: entryable.try(:merchant_id),
@@ -461,6 +463,7 @@ class Entry < ApplicationRecord
           name: split_attrs[:name],
           amount: split_attrs[:amount],
           currency: currency,
+          split_order: split_order,
           excluded: TRUTHY_VALUES.include?(split_attrs[:excluded]),
           entryable: child_transaction
         )

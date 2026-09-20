@@ -15,8 +15,8 @@ class SplitsController < ApplicationController
     raw_splits = split_params[:splits]
     raw_splits = raw_splits.values if raw_splits.respond_to?(:values)
 
-    splits = raw_splits.map do |s|
-      { name: s[:name], amount: s[:amount].to_d * -1, category_id: s[:category_id].presence, excluded: s[:excluded] }
+    splits = raw_splits.each_with_index.map do |s, index|
+      { name: s[:name], amount: s[:amount].to_d * -1, category_id: s[:category_id].presence, excluded: s[:excluded], split_order: index }
     end
 
     @entry.split!(splits)
@@ -36,7 +36,7 @@ class SplitsController < ApplicationController
     end
 
     @categories = grouped_categories
-    @children = @entry.child_entries.includes(:entryable)
+    @children = @entry.child_entries.includes(:entryable).order(:split_order, :created_at, :id)
   end
 
   def update
@@ -50,8 +50,8 @@ class SplitsController < ApplicationController
     raw_splits = split_params[:splits]
     raw_splits = raw_splits.values if raw_splits.respond_to?(:values)
 
-    splits = raw_splits.map do |s|
-      { name: s[:name], amount: s[:amount].to_d * -1, category_id: s[:category_id].presence, excluded: s[:excluded] }
+    splits = raw_splits.each_with_index.map do |s, index|
+      { name: s[:name], amount: s[:amount].to_d * -1, category_id: s[:category_id].presence, excluded: s[:excluded], split_order: index }
     end
 
     Entry.transaction do

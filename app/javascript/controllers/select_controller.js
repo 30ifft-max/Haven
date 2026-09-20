@@ -14,7 +14,8 @@ export default class extends Controller {
   static targets = ["button", "menu", "input", "content", "option"]
   static values = {
     menuPlacement: { type: String, default: "auto" },
-    offset: { type: Number, default: 6 }
+    offset: { type: Number, default: 6 },
+    fixedMenu: { type: Boolean, default: false }
   }
 
   connect() {
@@ -359,6 +360,11 @@ export default class extends Controller {
   updatePosition() {
     if (!this.buttonTarget || !this.menuTarget || !this.isOpen) return
 
+    if (this.fixedMenuValue) {
+      this.updateFixedPosition()
+      return
+    }
+
     const container = this.getScrollParent(this.element)
     const containerRect = container.getBoundingClientRect()
     const buttonRect = this.buttonTarget.getBoundingClientRect()
@@ -390,6 +396,35 @@ export default class extends Controller {
     if (menuRect.right > containerRect.right) {
       this.menuTarget.style.left = "auto"
       this.menuTarget.style.right = "0"
+    }
+  }
+
+  updateFixedPosition() {
+    const buttonRect = this.buttonTarget.getBoundingClientRect()
+    const viewportPadding = 12
+    const menuWidth = Math.min(this.menuTarget.offsetWidth || 320, window.innerWidth - (viewportPadding * 2))
+    const left = Math.min(
+      Math.max(viewportPadding, buttonRect.left),
+      window.innerWidth - menuWidth - viewportPadding
+    )
+    const menuHeight = this.menuTarget.scrollHeight
+    const spaceBelow = window.innerHeight - buttonRect.bottom - viewportPadding
+    const spaceAbove = buttonRect.top - viewportPadding
+    const shouldOpenUp = this.placementMode() === "up" || (this.placementMode() === "auto" && spaceBelow < menuHeight && spaceAbove > spaceBelow)
+    const availableHeight = Math.max(0, (shouldOpenUp ? spaceAbove : spaceBelow) - this.offsetValue)
+
+    this.menuTarget.style.position = "fixed"
+    this.menuTarget.style.left = `${left}px`
+    this.menuTarget.style.right = "auto"
+    this.menuTarget.style.top = shouldOpenUp ? "auto" : `${buttonRect.bottom + this.offsetValue}px`
+    this.menuTarget.style.bottom = shouldOpenUp ? `${window.innerHeight - buttonRect.top + this.offsetValue}px` : "auto"
+    this.menuTarget.style.maxHeight = "none"
+    this.menuTarget.style.overflowY = "visible"
+
+    if (this.hasContentTarget) {
+      const menuChromeHeight = this.menuTarget.scrollHeight - this.contentTarget.offsetHeight
+      this.contentTarget.style.maxHeight = `${Math.max(0, availableHeight - menuChromeHeight)}px`
+      this.contentTarget.style.overflowY = "auto"
     }
   }
 }

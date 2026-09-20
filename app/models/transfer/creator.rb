@@ -1,9 +1,10 @@
 class Transfer::Creator
-  def initialize(family:, source_account_id:, destination_account_id:, date:, amount:, exchange_rate: nil, source_fee_amount: nil, destination_fee_amount: nil, tag_ids: nil)
+  def initialize(family:, source_account_id:, destination_account_id:, date:, amount:, sort_time: "00:00", exchange_rate: nil, source_fee_amount: nil, destination_fee_amount: nil, tag_ids: nil)
     @family = family
     @source_account = family.accounts.find(source_account_id) # early throw if not found
     @destination_account = family.accounts.find(destination_account_id) # early throw if not found
     @date = date
+    @sort_time = sort_time.presence || "00:00"
     @amount = amount.to_d
     @source_fee_amount = source_fee_amount.to_d
     @destination_fee_amount = destination_fee_amount.to_d
@@ -47,7 +48,7 @@ class Transfer::Creator
   end
 
   private
-    attr_reader :family, :source_account, :destination_account, :date, :amount, :exchange_rate, :source_fee_amount, :destination_fee_amount, :tag_ids
+    attr_reader :family, :source_account, :destination_account, :date, :sort_time, :amount, :exchange_rate, :source_fee_amount, :destination_fee_amount, :tag_ids
 
     def apply_tags!(transfer)
       resolved_ids = family.tags.where(id: tag_ids).pluck(:id)
@@ -69,6 +70,7 @@ class Transfer::Creator
           amount: amount,
           currency: source_account.currency,
           date: date,
+          sort_time: sort_time,
           name: name,
           user_modified: true,
         )
@@ -90,6 +92,7 @@ class Transfer::Creator
           amount: net_inflow * -1,
           currency: destination_account.currency,
           date: date,
+          sort_time: sort_time,
           name: name,
           user_modified: true,
         )
@@ -105,6 +108,7 @@ class Transfer::Creator
           amount: source_fee_amount,
           currency: source_account.currency,
           date: date,
+          sort_time: sort_time,
           name: "Transfer fee — #{name_prefix} to #{destination_account.name}",
         )
       )
@@ -119,6 +123,7 @@ class Transfer::Creator
           amount: destination_fee_amount,
           currency: destination_account.currency,
           date: date,
+          sort_time: sort_time,
           name: "Transfer fee — #{name_prefix} from #{source_account.name}",
         )
       )

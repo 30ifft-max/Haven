@@ -39,6 +39,7 @@ class TransfersController < ApplicationController
       source_account_id: source_account.id,
       destination_account_id: destination_account.id,
       date: transfer_params[:date].present? ? Date.parse(transfer_params[:date]) : Date.current,
+      sort_time: transfer_params[:sort_time],
       amount: transfer_params[:amount].to_d,
       exchange_rate: transfer_params[:exchange_rate].presence&.to_d,
       source_fee_amount: transfer_params[:source_fee_amount],
@@ -190,7 +191,7 @@ class TransfersController < ApplicationController
     end
 
     def transfer_params
-      params.require(:transfer).permit(:from_account_id, :to_account_id, :amount, :date, :name, :excluded, :exchange_rate, :source_fee_amount, :destination_fee_amount, tag_ids: [])
+      params.require(:transfer).permit(:from_account_id, :to_account_id, :amount, :date, :sort_time, :name, :excluded, :exchange_rate, :source_fee_amount, :destination_fee_amount, tag_ids: [])
     end
 
     def set_accounts

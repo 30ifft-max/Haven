@@ -2,9 +2,10 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["rowsContainer", "row", "amountInput", "remaining", "remainingContainer", "error", "submitButton", "nameInput"]
-  static values = { total: Number, currency: String }
+  static values = { total: Number, currency: String, reorderLabel: String }
 
   connect() {
+    this.draggedRow = null
     this.updateRemaining()
   }
 
@@ -19,6 +20,8 @@ export default class extends Controller {
     const row = document.createElement("div")
     row.classList.add("p-3", "rounded-lg", "border", "border-secondary", "bg-container")
     row.dataset.splitTransactionTarget = "row"
+    row.draggable = true
+    row.dataset.action = "dragstart->split-transaction#dragStart dragover->split-transaction#dragOver dragend->split-transaction#dragEnd"
 
     // Clone category select from the first row
     const existingCategorySelect = container.querySelector(".category-select-container")
@@ -71,6 +74,7 @@ export default class extends Controller {
 
     row.innerHTML = `
       <div class="flex flex-wrap md:flex-nowrap items-end gap-2">
+        <span class="flex h-8 w-5 shrink-0 cursor-grab items-center justify-center text-secondary active:cursor-grabbing" draggable="true" title="${this.reorderLabelValue}"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></svg></span>
         <div class="w-full md:flex-1 md:w-auto min-w-0 md:min-w-28">
           <label class="text-xs font-medium text-secondary uppercase tracking-wide block mb-1">Name</label>
           <input type="text"
@@ -114,6 +118,33 @@ export default class extends Controller {
       this.reindexRows()
       this.updateRemaining()
     }
+  }
+
+  dragStart(event) {
+    this.draggedRow = event.currentTarget.closest("[data-split-transaction-target='row']")
+    event.dataTransfer.effectAllowed = "move"
+    event.dataTransfer.setData("text/plain", "split-row")
+    this.draggedRow.classList.add("opacity-50")
+  }
+
+  dragOver(event) {
+    event.preventDefault()
+    if (!this.draggedRow) return
+
+    const targetRow = event.currentTarget
+    if (targetRow === this.draggedRow) return
+
+    const midpoint = targetRow.getBoundingClientRect().top + targetRow.offsetHeight / 2
+    targetRow.parentNode.insertBefore(
+      this.draggedRow,
+      event.clientY < midpoint ? targetRow : targetRow.nextElementSibling
+    )
+  }
+
+  dragEnd() {
+    this.draggedRow?.classList.remove("opacity-50")
+    this.draggedRow = null
+    this.reindexRows()
   }
 
   reindexRows() {

@@ -1,6 +1,6 @@
 class Rule::ActionExecutor::ExcludeTransaction < Rule::ActionExecutor
   def label
-    "Exclude from budgeting and reports"
+    I18n.t("rules.actions.types.exclude_transaction", default: "Exclude from budgeting and reports")
   end
 
   def execute(transaction_scope, value: nil, ignore_attribute_locks: false, rule_run: nil)

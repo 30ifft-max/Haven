@@ -36,6 +36,7 @@ en:
       create_category: 'Create "%{name}"'
       create_category_error: Could not create category
       date: Date
+      sort_time: Sort time
       description: Description
       description_placeholder: Describe transaction
       expense: Expense
@@ -76,6 +77,7 @@ en:
       amount: Amount
       category_label: Category
       date_label: Date
+      sort_time_label: Sort time
       delete: Delete
       delete_subtitle: This permanently deletes the transaction, affects your historical
         balances, and cannot be undone.

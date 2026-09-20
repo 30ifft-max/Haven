@@ -1,6 +1,6 @@
 class Rule::ActionExecutor::SetInvestmentActivityLabel < Rule::ActionExecutor
   def label
-    "Set investment activity label"
+    I18n.t("rules.actions.types.set_investment_activity_label", default: "Set investment activity label")
   end
 
   def type

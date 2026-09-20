@@ -125,6 +125,7 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
         entry: {
           name: "Updated name",
           date: Date.current,
+          sort_time: "14:30",
           currency: "USD",
           amount: 100,
           nature: "inflow",
@@ -145,6 +146,7 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "Updated name", @entry.name
     assert_equal Date.current, @entry.date
+    assert_equal "14:30", @entry.sort_time.strftime("%H:%M")
     assert_equal "USD", @entry.currency
     assert_equal -100, @entry.amount
     assert_equal [ tags(:one).id, tags(:two).id ].sort, @entry.entryable.tag_ids.sort

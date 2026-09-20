@@ -37,13 +37,23 @@
     ) %>
     <% end %>
 
-    <%= f.date_field :date,
-      label: t(".date"),
-      required: true,
-      min: Entry.min_supported_date,
-      max: Date.current,
-      value: f.object.date || Date.current,
-      data: { transaction_form_target: "date", action: "change->transaction-form#checkCurrencyDifference" } %>
+    <div class="grid grid-cols-2 gap-2">
+      <%= f.date_field :date,
+        label: t(".date"),
+        required: true,
+        min: Entry.min_supported_date,
+        max: Date.current,
+        value: f.object.date || Date.current,
+        data: { transaction_form_target: "date", action: "change->transaction-form#checkCurrencyDifference" } %>
+
+      <%= f.text_field :sort_time,
+        label: t(".sort_time"),
+        value: f.object.sort_time&.strftime("%H:%M") || "00:00",
+        inputmode: "numeric",
+        maxlength: 5,
+        autocomplete: "off",
+        data: { controller: "compact-time-input", action: "focus->compact-time-input#select input->compact-time-input#format blur->compact-time-input#normalize" } %>
+    </div>
 
     <% convert_input = capture do %>
       <%= f.fields_for :entryable do |ef| %>

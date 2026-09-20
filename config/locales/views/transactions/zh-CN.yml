@@ -33,6 +33,7 @@ zh-CN:
       category_label: 分类
       category_prompt: 选择分类
       date: 日期
+      sort_time: 排序时间
       description: 描述
       description_placeholder: 描述交易
       expense: 支出
@@ -66,6 +67,7 @@ zh-CN:
       amount: 金额
       category_label: 分类
       date_label: 日期
+      sort_time_label: 排序时间
       delete: 删除
       delete_subtitle: 这将永久删除该交易，影响您的历史余额，并且无法撤销。
       delete_title: 删除交易

@@ -68,6 +68,14 @@
                 max: Date.current,
                 disabled: @entry.linked? || split_locked || edit_locked,
                 "data-auto-submit-form-target": "auto" %>
+          <%= f.text_field :sort_time,
+                label: t(".sort_time_label"),
+                value: @entry.sort_time&.strftime("%H:%M") || "00:00",
+                inputmode: "numeric",
+                maxlength: 5,
+                autocomplete: "off",
+                disabled: split_locked || edit_locked,
+                data: { controller: "compact-time-input", action: "focus->compact-time-input#select input->compact-time-input#format blur->compact-time-input#normalize", "auto-submit-form-target": "auto" } %>
           <% unless @entry.transaction.transfer? %>
             <div class="flex items-center gap-2">
               <%= f.select :nature,

@@ -23,6 +23,15 @@ class EntryTest < ActiveSupport::TestCase
     assert_equal entry_ids.sort.reverse, Entry.where(id: entry_ids).reverse_chronological.pluck(:id)
   end
 
+  test "reverse chronological ordering uses sort time before creation time" do
+    account = accounts(:depository)
+    date = Date.new(2026, 5, 5)
+    early = create_transaction(account: account, name: "Early", date: date, sort_time: "08:00")
+    late = create_transaction(account: account, name: "Late", date: date, sort_time: "18:00")
+
+    assert_equal [ late.id, early.id ], Entry.where(id: [ early.id, late.id ]).reverse_chronological.pluck(:id)
+  end
+
   test "bulk_update! touches the assigned category's last_used_at" do
     entry = create_transaction(account: accounts(:depository))
     category = categories(:income)

@@ -3,7 +3,7 @@
   selected_category = categories.find { |c| c.id == selected_id }
 %>
 
-<div class="category-select-container relative flex-1 md:flex-initial md:w-auto md:min-w-44 md:max-w-72" data-controller="select list-filter form-dropdown category-badge-select" data-action="dropdown:select->form-dropdown#onSelect dropdown:select->category-badge-select#updateButton">
+<div class="category-select-container relative flex-1 md:flex-initial md:w-auto md:min-w-44 md:max-w-72" data-controller="select list-filter form-dropdown category-badge-select" data-select-fixed-menu-value="true" data-action="dropdown:select->form-dropdown#onSelect dropdown:select->category-badge-select#updateButton">
   <label class="text-xs font-medium text-secondary uppercase tracking-wide block mb-1"><%= t("splits.new.category_label") %></label>
   <input type="hidden"
          name="<%= name %>"
@@ -45,7 +45,7 @@
         }
       ) %>
     </div>
-    <div data-list-filter-target="list" data-select-target="content" class="flex flex-col gap-0.5 max-h-64 overflow-auto" role="listbox" tabindex="-1">
+    <div data-list-filter-target="list" data-select-target="content" class="flex flex-col gap-0.5 max-h-[60vh] overflow-auto" role="listbox" tabindex="-1">
       <%# Uncategorized option %>
       <% is_blank_selected = selected_id.blank? %>
       <div class="filterable-item text-sm cursor-pointer flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-container-inset-hover <%= "bg-container-inset" if is_blank_selected %>"

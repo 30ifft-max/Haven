@@ -8,6 +8,7 @@ en:
       cancel: Cancel
       add_row: Add split
       remove_row: Remove
+      reorder: Reorder split
       remaining: Remaining
       amounts_must_match: Split amounts must equal the original transaction amount.
       name_label: Name

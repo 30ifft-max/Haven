@@ -1,6 +1,6 @@
 class Rule::ActionExecutor::SendEmailNotification < Rule::ActionExecutor
   def label
-    "Send email notification"
+    I18n.t("rules.actions.types.send_email_notification", default: "Send email notification")
   end
 
   # rule_run is accepted for interface compatibility but unused: the digest email

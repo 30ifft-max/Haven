@@ -53,7 +53,7 @@ class Rule::ConditionFilter
   end
 
   def label
-    key.humanize
+    I18n.t("rules.condition_filters.fields.#{key}", default: key.humanize)
   end
 
   def options

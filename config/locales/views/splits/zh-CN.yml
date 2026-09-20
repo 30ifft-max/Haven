@@ -8,6 +8,7 @@ zh-CN:
       cancel: 取消
       add_row: 添加拆分
       remove_row: 移除
+      reorder: 拖动调整顺序
       remaining: 剩余
       amounts_must_match: 拆分金额必须等于原始交易金额。
       name_label: 名称

@@ -18,6 +18,10 @@ en:
       all_past_and_future: All past and future %{resource}
       on_or_after: "%{resource} on or after %{date}"
     form:
+      if: IF
+      for: FOR
+      and: and
+      to: to
       rule_name_label: Rule name (optional)
       rule_name_placeholder: Enter a name for this rule
       add_condition: Add condition
@@ -38,6 +42,10 @@ en:
       toggle_sort_direction: Toggle sort direction
       no_rules_title: No rules yet
       no_rules_description: Set up rules to perform actions to your transactions and other data on every account sync.
+    new:
+      title: New %{resource} rule
+    resources:
+      transaction: transaction
     confirm:
       title: Confirm changes
       title_with_name: "Confirm changes to \"%{name}\""
@@ -52,6 +60,21 @@ en:
       confirm_changes: Confirm changes
     actions:
       value_placeholder: Enter a value
+      types:
+        set_transaction_category: Set transaction category
+        set_transaction_tags: Add transaction tag
+        set_transaction_merchant: Set transaction merchant
+        set_transaction_name: Set transaction name
+        set_investment_activity_label: Set investment activity label
+        exclude_transaction: Exclude from budgeting and reports
+        set_as_transfer_or_payment: Set as transfer or payment
+        send_email_notification: Send email notification
+        auto_categorize: Auto-categorize transactions with AI
+        auto_detect_merchants: Auto-detect merchants
+        auto_detect_merchants_ai: Auto-detect merchants with AI ($$)
+      cost_na: "cost: N/A"
+      per_transactions: per %{count} transactions
+      no_llm_provider: no LLM provider configured
     update:
       success: Rule updated
     destroy:
@@ -99,6 +122,16 @@ en:
       confirm_button: Reset Cache
       success: AI cache is being cleared. This may take a few moments.
     condition_filters:
+      fields:
+        transaction_name: Transaction name
+        transaction_amount: Transaction amount
+        transaction_type: Transaction type
+        transaction_merchant: Transaction merchant
+        transaction_category: Transaction category
+        transaction_tag: Transaction tag
+        transaction_details: Transaction details
+        transaction_notes: Transaction notes
+        transaction_account: Transaction account
       transaction_type:
         income: Income
         expense: Expense
