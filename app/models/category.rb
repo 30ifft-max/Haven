@@ -17,6 +17,7 @@ class Category < ApplicationRecord
   validates :name, uniqueness: { scope: :family_id }
 
   validate :category_level_limit
+  validate :group_only_categories_must_be_roots
 
   before_save :inherit_color_from_parent
 
@@ -29,6 +30,7 @@ class Category < ApplicationRecord
       .order(:name, :id)
   }
   scope :roots, -> { where(parent_id: nil) }
+  scope :selectable, -> { where(group_only: false) }
   # Legacy scopes - classification removed; these now return all categories
   scope :incomes, -> { all }
   scope :expenses, -> { all }
@@ -148,10 +150,19 @@ class Category < ApplicationRecord
     # rather than rendered as actual <select> options (e.g. Rule::Action and
     # Rule::Condition#value_display), so the cosmetic arrow doesn't leak into
     # plain-text summaries.
-    def self.select_options(categories, indent: true)
+    def self.select_options(categories, indent: true, selectable_only: false)
       self.for(categories).flat_map do |group|
-        [ [ group.category.name, group.category.id ] ] +
-          group.subcategories.map { |sub| [ indent ? "↳ #{sub.name}" : sub.name, sub.id ] }
+        root_option = if !selectable_only || group.category.selectable?
+          [ [ group.category.name, group.category.id ] ]
+        else
+          []
+        end
+
+        root_option + group.subcategories.filter_map do |sub|
+          next if selectable_only && !sub.selectable?
+
+          [ indent ? "↳ #{sub.name}" : sub.name, sub.id ]
+        end
       end
     end
 
@@ -178,7 +189,7 @@ class Category < ApplicationRecord
     # for where last_used_at is touched (only on a real human pick via one of the
     # manual assignment controllers, not rule/import auto-assignment).
     def recently_used_for(family:, excluding: [], limit: 4)
-      family.categories
+      family.categories.selectable
             .recently_used
             .excluding(Array(excluding).compact)
             .limit(limit)
@@ -353,6 +364,10 @@ class Category < ApplicationRecord
     parent_id.present? && parent.present?
   end
 
+  def selectable?
+    !group_only?
+  end
+
   def name_with_parent
     return name unless subcategory?
 
@@ -388,6 +403,10 @@ class Category < ApplicationRecord
       if (subcategory? && parent&.subcategory?) || (parent? && subcategory?)
         errors.add(:parent, "can't have more than 2 levels of subcategories")
       end
+    end
+
+    def group_only_categories_must_be_roots
+      errors.add(:group_only, "is only available for top-level categories") if group_only? && parent_id.present?
     end
 
     def monetizable_currency

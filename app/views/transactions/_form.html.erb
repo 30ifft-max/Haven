@@ -42,9 +42,13 @@
         label: t(".date"),
         required: true,
         min: Entry.min_supported_date,
-        max: Date.current,
-        value: f.object.date || Date.current,
-        data: { transaction_form_target: "date", action: "change->transaction-form#checkCurrencyDifference" } %>
+        value: f.object.date,
+        data: {
+          controller: "local-date-input",
+          local_date_input_default_today_value: f.object.date.blank?,
+          transaction_form_target: "date",
+          action: "change->transaction-form#checkCurrencyDifference"
+        } %>
 
       <%= f.text_field :sort_time,
         label: t(".sort_time"),

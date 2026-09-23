@@ -425,7 +425,8 @@ class Family::DataImporter
           name: data["name"],
           color: data["color"] || Category::UNCATEGORIZED_COLOR,
           classification_unused: data["classification_unused"] || data["classification"] || "expense",
-          lucide_icon: data["lucide_icon"] || "shapes"
+          lucide_icon: data["lucide_icon"] || "shapes",
+          group_only: data["group_only"] || false
         )
         category.save!
         map_source!(:categories, old_id, category)

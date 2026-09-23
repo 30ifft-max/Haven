@@ -9,7 +9,7 @@ class Category::DropdownsController < ApplicationController
   private
     def set_from_params
       if params[:category_id]
-        @selected_category = categories_scope.find(params[:category_id])
+        @selected_category = Current.family.categories.find(params[:category_id])
       end
 
       if params[:transaction_id]
@@ -18,6 +18,6 @@ class Category::DropdownsController < ApplicationController
     end
 
     def categories_scope
-      Current.family.categories.alphabetically
+      Current.family.categories.selectable.alphabetically
     end
 end

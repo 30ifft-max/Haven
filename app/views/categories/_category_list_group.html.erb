@@ -8,32 +8,58 @@
   end %>
 <% end %>
 
-<div class="rounded-xl bg-container-inset space-y-1 p-1">
+<div class="rounded-xl bg-container shadow-border-xs" data-controller="category-accordion">
   <div class="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-secondary uppercase">
     <p><%= title %></p>
     <span class="text-subdued">&middot;</span>
     <p><%= categories.count %></p>
   </div>
 
-  <div class="shadow-border-xs rounded-lg bg-container">
-    <div class="overflow-hidden rounded-lg">
-      <% category_groups.each_with_index do |group, idx| %>
+  <div class="overflow-hidden rounded-b-xl">
+    <% category_groups.each_with_index do |group, idx| %>
+      <% if group.subcategories.any? %>
+        <details
+          id="<%= dom_id(group.category) %>"
+          class="group relative"
+          data-category-accordion-target="item"
+          data-action="toggle->category-accordion#toggle">
+          <summary class="flex min-h-14 list-none cursor-pointer items-center gap-3 px-4 pr-14 hover:bg-container-inset focus-ring">
+            <%= icon "chevron-right", size: "sm", class: "shrink-0 text-secondary transition-transform duration-150 group-open:rotate-90" %>
+            <%= render partial: "categories/badge", locals: { category: group.category } %>
+            <% if group.category.group_only? %>
+              <span class="text-xs text-secondary"><%= t("categories.form.group_only_badge") %></span>
+            <% end %>
+          </summary>
+
+          <div class="absolute right-3 top-2.5" data-testid="category-actions">
+            <%= render DS::Menu.new do |menu| %>
+              <% menu.with_item(variant: "link", text: t("categories.category.edit"), icon: "pencil", href: edit_category_path(group.category), data: { turbo_frame: :modal }) %>
+
+              <% if category_ids_with_transactions.key?(group.category.id) %>
+                <% menu.with_item(variant: "link", text: t("categories.category.delete"), icon: "trash-2", href: new_category_deletion_path(group.category), destructive: true, data: { turbo_frame: :modal }) %>
+              <% else %>
+                <% menu.with_item(variant: "button", text: t("categories.category.delete"), icon: "trash-2", href: category_path(group.category), method: :delete) %>
+              <% end %>
+            <% end %>
+          </div>
+
+          <div class="border-t border-divider py-1">
+            <% group.subcategories.each do |subcategory| %>
+              <%= render "categories/category",
+                         category: subcategory,
+                         has_transactions: category_ids_with_transactions.key?(subcategory.id) %>
+            <% end %>
+          </div>
+        </details>
+      <% else %>
         <%= render "categories/category",
                    category: group.category,
-                   subcategories: group.subcategories,
                    has_transactions: category_ids_with_transactions.key?(group.category.id) %>
-
-        <% group.subcategories.each do |subcategory| %>
-          <%= render "categories/category",
-                     category: subcategory,
-                     subcategories: [],
-                     has_transactions: category_ids_with_transactions.key?(subcategory.id) %>
-        <% end %>
-
-        <% unless idx == category_groups.count - 1 %>
-          <%= render "shared/ruler" %>
-        <% end %>
       <% end %>
-    </div>
+
+      <% unless idx == category_groups.count - 1 %>
+        <%= render "shared/ruler" %>
+      <% end %>
+    <% end %>
   </div>
 </div>

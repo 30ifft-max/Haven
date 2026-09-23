@@ -64,6 +64,13 @@
         <% unless category.parent? %>
           <%= f.select :parent_id, categories.pluck(:name, :id), { include_blank: t(".unassigned"), label: t(".parent_category_label") }, disabled: category.parent?, data: { action: "change->color-icon-picker#handleParentChange" } %>
         <% end %>
+
+        <% if category.persisted? && category.parent_id.blank? %>
+          <div>
+            <%= f.check_box :group_only, label: t(".group_only_label") %>
+            <p class="mt-1 text-xs text-secondary"><%= t(".group_only_hint") %></p>
+          </div>
+        <% end %>
       </div>
     </section>
 

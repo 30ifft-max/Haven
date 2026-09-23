@@ -99,6 +99,6 @@ class SplitsController < ApplicationController
     end
 
     def grouped_categories
-      Current.family.categories.alphabetically_by_hierarchy
+      Current.family.categories.selectable.alphabetically_by_hierarchy
     end
 end

@@ -31,4 +31,20 @@ class CategoryListGroupViewTest < ActionView::TestCase
       })
     end
   end
+
+  test "renders subcategories inside a collapsible parent row" do
+    parent = categories(:food_and_drink)
+    child = categories(:subcategory)
+
+    html = render(partial: "categories/category_list_group", locals: {
+      title: "Categories",
+      categories: [ parent, child ],
+      family: parent.family,
+      category_ids_with_transactions: {}
+    })
+
+    assert_select "details##{dom_id(parent)}[data-category-accordion-target='item']", count: 1
+    assert_select "##{dom_id(parent)} ##{dom_id(child)}", count: 1
+    assert_not_includes html, "corner-down-right"
+  end
 end

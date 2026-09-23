@@ -8,6 +8,11 @@ class Tag < ApplicationRecord
   validates :color, format: { with: /\A#[0-9A-Fa-f]{6}\z/ }, allow_nil: true
 
   scope :alphabetically, -> { order(:name, :id) }
+  scope :with_usage_count, -> {
+    left_joins(:taggings)
+      .select("tags.*, COUNT(taggings.id) AS usage_count")
+      .group("tags.id")
+  }
 
   COLORS = %w[#e99537 #4da568 #6471eb #db5a54 #df4e92 #c44fe9 #eb5429 #61c9ea #805dee #6ad28a]
 
@@ -23,5 +28,9 @@ class Tag < ApplicationRecord
 
       destroy!
     end
+  end
+
+  def usage_count
+    has_attribute?(:usage_count) ? self[:usage_count].to_i : taggings.count
   end
 end

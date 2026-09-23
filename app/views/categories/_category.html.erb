@@ -1,14 +1,11 @@
-<%# locals: (category:, subcategories: [], has_transactions: false) %>
+<%# locals: (category:, has_transactions: false) %>
 
-<div id="<%= dom_id(category) %>" class="flex items-center gap-3 px-4 pb-4 <%= "pt-4" unless category.parent_id.present? %> bg-container">
+<div id="<%= dom_id(category) %>" class="flex min-h-14 items-center gap-3 px-4 <%= "pl-10" if category.parent_id.present? %> hover:bg-container-inset">
   <div class="flex min-w-0 flex-1 items-center gap-2.5" data-testid="category-content">
-    <% if category.parent_id.present? %>
-      <span style="color: <%= category.color %>">
-        <%= icon "corner-down-right", size: "sm", color: "current", class: "ml-2" %>
-      </span>
-    <% end %>
-
     <%= render partial: "categories/badge", locals: { category: category } %>
+    <% if category.group_only? %>
+      <span class="text-xs text-secondary"><%= t("categories.form.group_only_badge") %></span>
+    <% end %>
   </div>
 
   <div class="shrink-0" data-testid="category-actions">

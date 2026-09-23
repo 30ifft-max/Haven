@@ -19,6 +19,26 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "index shows each tag's usage count" do
+    tag = @user.family.tags.first
+    initial_usage_count = tag.taggings.count
+    transaction = Transaction.create!(tag_ids: [ tag.id ])
+    Entry.create!(
+      account: @user.family.accounts.first,
+      entryable: transaction,
+      name: "Tagged transaction",
+      date: Date.current,
+      amount: 10,
+      currency: @user.family.currency
+    )
+
+    get tags_url
+
+    assert_response :success
+    assert_select "##{dom_id(tag)} [data-testid='tag-usage-count']",
+                  text: "· #{initial_usage_count + 1}"
+  end
+
   test "should get new" do
     get new_tag_url
     assert_response :success

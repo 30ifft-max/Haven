@@ -3,6 +3,10 @@ class Transactions::BulkUpdatesController < ApplicationController
   end
 
   def create
+    if bulk_update_params[:category_id].present? && !Current.family.categories.selectable.exists?(id: bulk_update_params[:category_id])
+      return redirect_back_or_to transactions_path, alert: "Category cannot be used for transactions"
+    end
+
     # Skip split parents from bulk update - update children instead
     updated = Current.family
                      .entries

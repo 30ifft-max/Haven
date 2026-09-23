@@ -85,13 +85,20 @@ export default class extends Controller {
       return;
     }
 
-    if (
-      event.key === "Enter" &&
-      !this.createFormTarget.classList.contains("hidden") &&
-      !this.creating
-    ) {
-      event.preventDefault();
-      this.createCategory();
+    if (event.key === "Enter") {
+      const firstVisibleOption = this.optionTargets.find(
+        (option) => !option.classList.contains("hidden"),
+      );
+
+      if (firstVisibleOption) {
+        event.preventDefault();
+        this.selectOption(firstVisibleOption);
+        this.close();
+        this.submitForm();
+      } else if (!this.createFormTarget.classList.contains("hidden") && !this.creating) {
+        event.preventDefault();
+        this.createCategory();
+      }
     }
   }
 

@@ -40,7 +40,7 @@
           placeholder: t("helpers.select.search_placeholder"),
           data: {
             list_filter_target: "input",
-            action: "input->list-filter#filter input->select#syncTabindex"
+            action: "input->list-filter#filter input->select#syncTabindex keydown->select#selectFirstVisible"
           }
         ) %>
       </div>

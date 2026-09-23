@@ -11,8 +11,8 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
   test "index" do
     get categories_url
     assert_response :success
-    assert_select "#category_#{categories(:food_and_drink).id} > [data-testid='category-content']", count: 1
-    assert_select "#category_#{categories(:food_and_drink).id} > [data-testid='category-actions']", count: 1
+    assert_select "details#category_#{categories(:food_and_drink).id} summary", count: 1
+    assert_select "details#category_#{categories(:food_and_drink).id} > [data-testid='category-actions']", count: 1
     assert_select "#category_#{categories(:food_and_drink).id} [data-testid='category-name']", text: categories(:food_and_drink).name
   end
 
@@ -156,6 +156,15 @@ class CategoriesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to categories_url
+  end
+
+  test "update can mark a top-level category as group-only" do
+    category = categories(:food_and_drink)
+
+    patch category_url(category), params: { category: { group_only: true } }
+
+    assert_redirected_to categories_url
+    assert category.reload.group_only?
   end
 
   test "bootstrap" do

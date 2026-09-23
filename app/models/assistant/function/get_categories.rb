@@ -68,7 +68,8 @@ class Assistant::Function::GetCategories < Assistant::Function
           color: c.color,
           icon: c.lucide_icon,
           parent_id: c.parent_id,
-          is_subcategory: c.subcategory?
+          is_subcategory: c.subcategory?,
+          group_only: c.group_only?
         }
       },
       total_results: pagy.count,

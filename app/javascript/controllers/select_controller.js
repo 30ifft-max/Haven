@@ -115,6 +115,7 @@ export default class extends Controller {
       this.menuTarget.classList.add("opacity-100", "translate-y-0")
       this.updatePosition()
       this.scrollToSelected()
+      this.focusSearch()
     })
   }
 
@@ -140,13 +141,15 @@ export default class extends Controller {
       this.inputTarget.dispatchEvent(new Event("change", { bubbles: true }))
     }
 
-    const previousSelected = this.menuTarget.querySelector("[aria-selected='true']")
-    if (previousSelected) {
-      previousSelected.setAttribute("aria-selected", "false")
-      previousSelected.classList.remove("bg-container-inset")
-      const prevIcon = previousSelected.querySelector(".check-icon")
-      if (prevIcon) prevIcon.classList.add("hidden")
-    }
+    // Keyboard navigation also uses aria-selected while moving through the
+    // filtered options. Clear every option first so navigation highlights
+    // cannot leave multiple checkmarks behind.
+    this.optionTargets.forEach((option) => {
+      option.setAttribute("aria-selected", "false")
+      option.classList.remove("bg-container-inset")
+      const checkIcon = option.querySelector(".check-icon")
+      if (checkIcon) checkIcon.classList.add("hidden")
+    })
 
     selectedElement.setAttribute("aria-selected", "true")
     selectedElement.classList.add("bg-container-inset")
@@ -166,6 +169,21 @@ export default class extends Controller {
     const input = this.menuTarget.querySelector('input[type="search"]')
     if (input) { input.focus({ preventScroll: true }); return true }
     return false
+  }
+
+  selectFirstVisible(event) {
+    if (event.key !== "Enter") return
+
+    // Arrow keys move focus to an option. Let the normal option handler
+    // confirm that highlighted choice instead of replacing it with the first
+    // filtered result.
+    if (event.target !== this.menuTarget.querySelector('input[type="search"]')) return
+
+    const firstVisible = this.visibleOptions()[0]
+    if (!firstVisible) return
+
+    event.preventDefault()
+    firstVisible.click()
   }
 
   focusFirstElement() {

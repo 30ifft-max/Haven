@@ -24,6 +24,7 @@ class Transaction < ApplicationRecord
   ].freeze
 
   validate :validate_attachments, if: -> { attachments.attached? }
+  validate :category_must_be_selectable, if: :will_save_change_to_category_id?
 
   accepts_nested_attributes_for :taggings, allow_destroy: true
 
@@ -53,6 +54,10 @@ class Transaction < ApplicationRecord
   validate :exchange_rate_must_be_valid
 
   private
+
+    def category_must_be_selectable
+      errors.add(:category, "is a group and cannot be used for transactions") if category&.group_only?
+    end
 
     def exchange_rate_must_be_valid
       if extra&.dig("exchange_rate_invalid")

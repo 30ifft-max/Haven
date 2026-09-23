@@ -51,6 +51,7 @@ class RecurringTransaction < ApplicationRecord
             allow_nil: true
   validate :merchant_or_name_present
   validate :category_belongs_to_family
+  validate :category_must_be_selectable
   validate :accounts_belong_to_family
   validate :amount_variance_consistency
   validate :transfer_endpoints_consistent
@@ -135,6 +136,10 @@ class RecurringTransaction < ApplicationRecord
     unless Category.where(id: category_id, family_id: family_id).exists?
       errors.add(:category_id, :invalid)
     end
+  end
+
+  def category_must_be_selectable
+    errors.add(:category_id, :invalid) if category&.group_only?
   end
 
   # account_id and destination_account_id are mass-assignable like category_id,

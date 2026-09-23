@@ -17,6 +17,9 @@ en:
       name_label: Name
       unassigned: "(unassigned)"
       parent_category_label: "Parent category (optional)"
+      group_only_label: Use only as a group
+      group_only_hint: This category will not be available when categorizing transactions.
+      group_only_badge: Group
       trigger_label: Choose color and icon
       color: Color
       icon: Icon

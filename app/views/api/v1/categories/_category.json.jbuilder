@@ -4,6 +4,7 @@ json.id category.id
 json.name category.name
 json.color category.color
 json.icon category.lucide_icon
+json.group_only category.group_only?
 
 # Parent information (for subcategories)
 if category.parent.present?

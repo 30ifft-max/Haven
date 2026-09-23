@@ -118,4 +118,20 @@ class CategoriesTest < ApplicationSystemTestCase
 
     assert_operator page_scroll_width, :<=, viewport_width
   end
+
+  test "expanding a category collapses the other expanded category" do
+    first_parent = @user.family.categories.create!(name: "Housing", color: "#e99537", lucide_icon: "home")
+    @user.family.categories.create!(name: "Utilities", parent: first_parent, color: "#e99537", lucide_icon: "zap")
+    second_parent = @user.family.categories.create!(name: "Transport", color: "#6471eb", lucide_icon: "car")
+    @user.family.categories.create!(name: "Transit", parent: second_parent, color: "#6471eb", lucide_icon: "bus")
+
+    visit categories_url
+
+    find("details##{ActionView::RecordIdentifier.dom_id(first_parent)} summary").click
+    assert_selector "details##{ActionView::RecordIdentifier.dom_id(first_parent)}[open]"
+
+    find("details##{ActionView::RecordIdentifier.dom_id(second_parent)} summary").click
+    assert_selector "details##{ActionView::RecordIdentifier.dom_id(second_parent)}[open]"
+    assert_no_selector "details##{ActionView::RecordIdentifier.dom_id(first_parent)}[open]"
+  end
 end

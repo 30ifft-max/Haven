@@ -2,7 +2,7 @@ class TagsController < ApplicationController
   before_action :set_tag, only: %i[edit update destroy]
 
   def index
-    @tags = Current.family.tags.alphabetically
+    @tags = Current.family.tags.with_usage_count.alphabetically.to_a
 
     render layout: "settings"
   end

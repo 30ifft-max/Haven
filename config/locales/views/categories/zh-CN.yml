@@ -17,6 +17,9 @@ zh-CN:
       name_label: 名称
       unassigned: （未分配）
       parent_category_label: 父分类（可选）
+      group_only_label: 仅作为分组使用
+      group_only_hint: 此分类将不会出现在交易分类选择中。
+      group_only_badge: 分组
       trigger_label: 选择颜色和图标
       color: 颜色
       icon: 图标
