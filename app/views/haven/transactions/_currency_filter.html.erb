@@ -1,0 +1,16 @@
+<%# locals: (form:) %>
+<div class="space-y-2 border-b border-secondary pb-3" data-controller="haven--currency-filter">
+  <label class="flex items-center gap-3 text-sm text-primary">
+    <%= check_box_tag "limit_currency", "1", @q[:currency].present?,
+          name: nil, class: "checkbox checkbox--light shrink-0",
+          data: { haven__currency_filter_target: "enabled", action: "change->haven--currency-filter#toggle" } %>
+    <%= t("haven.transactions.currency_filter.limit") %>
+  </label>
+  <%= form.select :currency,
+        options_for_select(Money::Currency.all_instances.map(&:iso_code).sort, @q[:currency].presence || Current.family.currency),
+        {},
+        disabled: @q[:currency].blank?,
+        aria: { label: t("haven.transactions.currency_filter.currency") },
+        class: "w-full rounded-lg border border-secondary bg-container px-3 py-2 text-sm text-primary disabled:opacity-50",
+        data: { haven__currency_filter_target: "select" } %>
+</div>

@@ -24,9 +24,9 @@ module TransactionsHelper
     end_date = Date.parse(end_date.to_s)
 
     ranges = {
-      "last_7_days" => [ Date.current - 7.days, Date.current ],
-      "last_14_days" => [ Date.current - 14.days, Date.current ],
-      "last_30_days" => [ Date.current - 30.days, Date.current ],
+      "last_7_days" => [ Date.current - 6.days, Date.current ],
+      "last_14_days" => [ Date.current - 13.days, Date.current ],
+      "last_30_days" => [ Date.current - 29.days, Date.current ],
       "this_month" => [ Date.current.beginning_of_month, Date.current ],
       "last_month" => [ Date.current.last_month.beginning_of_month, Date.current.last_month.end_of_month ],
       "this_year" => [ Date.current.beginning_of_year, Date.current ],
@@ -34,7 +34,7 @@ module TransactionsHelper
     }
 
     range_key = ranges.key([ start_date, end_date ])
-    return t("transactions.searches.date_menu.quick_ranges.#{range_key}") if range_key
+    t("transactions.searches.date_menu.quick_ranges.#{range_key}") if range_key
   rescue Date::Error
     nil
   end

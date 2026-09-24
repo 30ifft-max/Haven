@@ -9,23 +9,19 @@
     <% if @q.present? %>
       <%= link_to "清除", transactions_path(clear_filters: true), class: "inline-flex items-center px-2 text-base font-semibold text-link no-underline hover:no-underline whitespace-nowrap" %>
     <% end %>
-    <div class="w-full max-w-[400px] min-w-0 shrink">
-      <% if @q[:search].present? %>
-        <div class="relative ml-auto w-[250px]">
-          <%= form.text_field :search, value: @q[:search], placeholder: "搜索", class: "form-field__input w-full rounded-lg border border-secondary bg-surface-inset px-3 py-2 pr-8", "data-auto-submit-form-target": "auto" %>
-          <%= button_tag "×", type: "submit", name: "q[search]", value: "", class: "absolute right-2 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded-full text-secondary hover:bg-surface-hover", aria: { label: t("transactions.searches.form.clear_search", default: "清除搜索") } %>
+    <div class="min-w-0 md:flex-1 md:max-w-[400px]">
+      <details class="haven-transaction-search group relative ml-auto w-fit open:w-[250px] md:w-full md:open:w-full" data-controller="haven--transaction-search" <%= "open" if @q[:search].present? %>>
+        <summary class="list-none cursor-pointer font-medium whitespace-nowrap inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-primary border border-secondary hover:bg-surface-hover group-open:hidden md:hidden">
+          <%= icon("search") %>
+          <span><%= t("haven.transactions.search") %></span>
+        </summary>
+        <div class="haven-transaction-search-input relative hidden group-open:block md:block">
+          <%= form.text_field :search, value: @q[:search], placeholder: t("haven.transactions.search"), aria: { label: t("haven.transactions.search") }, class: "form-field__input w-full rounded-lg border border-secondary bg-surface-inset px-3 py-2 pr-8", "data-auto-submit-form-target": "auto" %>
+          <% if @q[:search].present? %>
+            <%= button_tag "×", type: "submit", name: "q[search]", value: "", class: "absolute right-2 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded-full text-secondary hover:bg-surface-hover", aria: { label: t("transactions.searches.form.clear_search", default: "Clear search") } %>
+          <% end %>
         </div>
-      <% else %>
-        <details class="group relative ml-auto w-fit open:w-[250px]" data-controller="collapsible-search">
-          <summary class="list-none cursor-pointer font-medium whitespace-nowrap inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-primary border border-secondary hover:bg-surface-hover group-open:hidden">
-            <%= icon("search") %>
-            <span>搜索</span>
-          </summary>
-          <div class="absolute right-0 top-0 hidden w-[250px] group-open:block">
-            <%= form.text_field :search, autofocus: true, placeholder: "搜索", class: "form-field__input w-full rounded-lg border border-secondary bg-surface-inset px-3 py-2", "data-auto-submit-form-target": "auto" %>
-          </div>
-        </details>
-      <% end %>
+      </details>
     </div>
 
     <%= render DS::Popover.new(variant: "button", no_padding: true, placement: "bottom-start") do |popover| %>

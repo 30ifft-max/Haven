@@ -1,5 +1,6 @@
 <%# locals: (form:) %>
 <div class="space-y-3 p-2" data-controller="transaction-amount-filter">
+  <%= render "haven/transactions/currency_filter", form: form %>
   <% {
     "greater" => t(".greater_than"),
     "less" => t(".less_than"),
@@ -9,11 +10,11 @@
     <% selected = @q[:amount_operator] == value %>
     <div>
       <div class="flex items-center gap-3">
-        <%= check_box_tag "q[amount_operator]",
+        <%= radio_button_tag "q[amount_operator]",
                           value,
                           selected,
                           id: "q_amount_operator_#{value}",
-                          class: "checkbox checkbox--light shrink-0",
+                          class: "shrink-0",
                           data: { transaction_amount_filter_target: "operator", action: "change->transaction-amount-filter#toggle" } %>
         <%= label_tag "q_amount_operator_#{value}", label, class: "cursor-pointer text-sm text-primary" %>
       </div>

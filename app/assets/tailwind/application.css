@@ -13,6 +13,7 @@
 @import "./date-picker-dark-mode.css";
 @import "./print-report.css";
 @import "./privacy-mode.css";
+@import "./haven/transactions.css";
 
 @layer components {
   .pcr-app{

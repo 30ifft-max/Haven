@@ -1,0 +1,7 @@
+zh-TW:
+  haven:
+    transactions:
+      search: 搜尋
+      currency_filter:
+        limit: 限定幣別
+        currency: 幣別

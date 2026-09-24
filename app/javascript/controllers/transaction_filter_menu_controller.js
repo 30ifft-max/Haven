@@ -29,11 +29,22 @@ export default class extends Controller {
   }
 
   removeSelected(event) {
+    // Removing the clicked chip replaces its DOM node. Keep that click from
+    // being mistaken for an outside click by the enclosing popover.
+    event.stopPropagation();
     const input = this.element.querySelector(`#${CSS.escape(event.currentTarget.dataset.inputId)}`);
     if (!input) return;
 
     if (input.name === "q[amount_min]") {
       this.element.querySelector('[name="q[amount_max]"]').value = "";
+    }
+    if (input.name === "q[currency]") {
+      const toggle = input.closest('[data-controller="haven--currency-filter"]')?.querySelector('input[type="checkbox"]');
+      if (toggle) {
+        toggle.checked = false;
+        toggle.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      return;
     }
     if (input.type === "checkbox") input.checked = false;
     else input.value = "";

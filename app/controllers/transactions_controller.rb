@@ -20,7 +20,8 @@ class TransactionsController < ApplicationController
   def index
     @q = search_params
     @accessible_account_ids = Current.user.accessible_accounts.pluck(:id)
-    @search = Transaction::Search.new(Current.family, filters: @q, accessible_account_ids: @accessible_account_ids)
+    search_class = @q[:currency].present? ? Haven::TransactionSearch : Transaction::Search
+    @search = search_class.new(Current.family, filters: @q, accessible_account_ids: @accessible_account_ids)
 
     base_scope = @search.transactions_scope
                        .reorder(
@@ -56,7 +57,7 @@ class TransactionsController < ApplicationController
                        )
 
     @pagy, @transactions = pagy(
-      base_scope,
+      Haven::TransactionList.call(base_scope),
       limit: safe_per_page(stored_params["per_page"].presence || 30, allowed_values: [ 30, 50, 200, 500 ])
     )
     Transaction::ActivitySecurityPreloader.new(@transactions).preload
@@ -623,7 +624,7 @@ class TransactionsController < ApplicationController
       cleaned_params = params.fetch(:q, {})
               .permit(
                 :start_date, :end_date, :search, :amount, :amount_min, :amount_max,
-                :amount_operator, :active_accounts_only,
+                :amount_operator, :active_accounts_only, :currency,
                 accounts: [], account_ids: [],
                 categories: [], merchants: [], types: [], tags: [], status: []
               )
