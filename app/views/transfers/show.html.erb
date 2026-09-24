@@ -21,6 +21,17 @@
   <% dialog.with_body do %>
     <% dialog.with_section(title: t(".overview"), open: true) do %>
       <div class="pb-4 px-3 pt-2 text-sm space-y-3 text-primary">
+        <%= styled_form_with model: @transfer,
+              data: { controller: "auto-submit-form" } do |f| %>
+          <%= f.text_field :sort_time,
+                label: t(".sort_time"),
+                value: @transfer.outflow_transaction.entry.sort_time&.strftime("%H:%M") || "00:00",
+                inputmode: "numeric",
+                maxlength: 5,
+                autocomplete: "off",
+                data: { controller: "compact-time-input", action: "focus->compact-time-input#select input->compact-time-input#format blur->compact-time-input#normalize", "auto-submit-form-target": "auto" } %>
+          <p class="mt-1 text-xs text-secondary"><%= t(".sort_time_hint") %></p>
+        <% end %>
         <div class="space-y-3">
           <dl class="flex items-center gap-2 justify-between">
             <dt class="text-secondary"><%= t(".from") %></dt>

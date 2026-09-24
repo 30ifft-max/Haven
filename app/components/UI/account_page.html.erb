@@ -15,12 +15,22 @@
       </div>
     <% end %>
 
-    <div data-testid="account-details">
+    <div data-testid="account-details" class="relative">
       <% if tabs.count > 1 %>
-        <%= render DS::Tabs.new(active_tab: active_tab, url_param_key: "tab") do |tabs_container| %>
-          <% tabs_container.with_nav(classes: "max-w-fit") do |nav| %>
+        <%= render DS::Tabs.new(
+              active_tab: active_tab,
+              url_param_key: "tab",
+              variant: :unstyled,
+              active_btn_classes: "tab-item-active text-primary shadow-sm",
+              inactive_btn_classes: "text-secondary hover:bg-surface-inset-hover"
+            ) do |tabs_container| %>
+          <% tabs_container.with_nav(classes: "max-w-fit flex bg-surface-inset p-1 rounded-lg") do |nav| %>
             <% tabs.each do |tab| %>
-              <% nav.with_btn(id: tab, label: t("accounts.show.tabs.#{tab}", default: tab.to_s.humanize), classes: "px-6") %>
+              <% nav.with_btn(
+                    id: tab,
+                    label: t("accounts.show.tabs.#{tab}", default: tab.to_s.humanize),
+                    classes: "shrink-0 whitespace-nowrap inline-flex justify-center items-center text-sm font-medium px-6 py-1 rounded-md motion-safe:transition-colors motion-safe:duration-200"
+                  ) %>
             <% end %>
           <% end %>
 
@@ -28,6 +38,14 @@
             <% tabs_container.with_panel(tab_id: tab) do %>
               <%= tab_content_for(tab) %>
             <% end %>
+          <% end %>
+
+          <div class="mb-4">
+            <%= tabs_container.nav %>
+          </div>
+
+          <% tabs_container.panels.each do |panel| %>
+            <%= panel %>
           <% end %>
         <% end %>
       <% else %>

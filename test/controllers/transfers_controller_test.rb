@@ -44,6 +44,37 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "March credit card payment", transfer.inflow_transaction.entry.reload.name
   end
 
+  test "can edit transfer sort time across both entries and fees" do
+    post transfers_url, params: {
+      transfer: {
+        from_account_id: accounts(:depository).id,
+        to_account_id: accounts(:credit_card).id,
+        date: Date.current,
+        amount: 100,
+        source_fee_amount: 2,
+        destination_fee_amount: 3
+      }
+    }
+
+    transfer = Transfer.order(created_at: :desc).first
+    get transfer_url(transfer)
+    assert_response :success
+    assert_select "input[name='transfer[sort_time]']"
+    overview = Nokogiri::HTML(response.body).css("details").find do |details|
+      details.at_css("summary")&.text&.include?(I18n.t("transfers.show.overview"))
+    end
+    assert_equal I18n.t("transfers.show.sort_time"), overview.at_css("label").text.strip
+    assert_includes overview.text, I18n.t("transfers.show.sort_time_hint")
+
+    patch transfer_url(transfer), params: { transfer: { sort_time: "05:32" } }
+
+    assert_redirected_to transactions_url
+    entries = [ transfer.outflow_transaction.entry, transfer.inflow_transaction.entry ] +
+              transfer.fee_transactions.includes(:entry).map(&:entry)
+    assert_equal 4, entries.size
+    assert_equal [ "05:32" ] * 4, entries.map { |entry| entry.reload.sort_time.strftime("%H:%M") }
+  end
+
   test "can classify a transfer without changing its financial kind" do
     transfer = transfers(:one)
     original_outflow_kind = transfer.outflow_transaction.kind

@@ -79,7 +79,7 @@ class AccountsController < ApplicationController
       return render_statement_tab_frame if statement_tab_frame_request?
     end
 
-    per_page = safe_per_page(stored_per_page_default)
+    per_page = safe_per_page(stored_per_page_default, allowed_values: [ 30, 50, 200 ])
     store_per_page!(per_page) if params[:per_page].present?
 
     @pagy, @entries = pagy(
@@ -306,7 +306,7 @@ class AccountsController < ApplicationController
     end
 
     def stored_per_page_default
-      Current.session.prev_transaction_page_params["per_page"].presence || 10
+      Current.session.prev_transaction_page_params["per_page"].presence || 30
     end
 
     def set_account

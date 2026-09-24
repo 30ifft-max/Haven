@@ -28,6 +28,8 @@ en:
     new:
       title: New transfer
     show:
+      sort_time: Sort time
+      sort_time_hint: This time applies to the transaction entries in both the outgoing and incoming accounts.
       delete: Remove transfer
       delete_subtitle: This removes the transfer.  It will not delete the underlying
         transactions.

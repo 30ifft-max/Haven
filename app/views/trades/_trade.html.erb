@@ -1,4 +1,4 @@
-<%# locals: (entry:, balance_trend: nil, **) %>
+<%# locals: (entry:, balance_trend: nil, view_ctx: "global", **) %>
 
 <% trade = entry.entryable %>
 <% trade_logo_url = trade.security&.display_logo_url %>
@@ -7,15 +7,17 @@
   <%= turbo_frame_tag dom_id(trade) do %>
     <div class="group grid grid-cols-12 items-center <%= entry.excluded ? "text-secondary bg-surface-inset" : "text-primary" %> text-sm font-medium p-4">
       <div class="col-span-8 flex items-center gap-4">
-        <%= check_box_tag dom_id(entry, "selection"),
-                        class: "checkbox checkbox--light hidden lg:block",
-                        data: {
-                          id: entry.id,
-                          entry_type: entry.entryable_type,
-                          "bulk-select-target": "row",
-                          action: "bulk-select#toggleRowSelection",
-                          checkbox_toggle_target: "selectionEntry"
-                        } %>
+        <% unless view_ctx == "account" %>
+          <%= check_box_tag dom_id(entry, "selection"),
+              class: "checkbox checkbox--light hidden lg:block",
+              data: {
+                id: entry.id,
+                entry_type: entry.entryable_type,
+                "bulk-select-target": "row",
+                action: "bulk-select#toggleRowSelection",
+                checkbox_toggle_target: "selectionEntry"
+              } %>
+        <% end %>
 
         <div class="max-w-full">
           <%= tag.div class: ["flex items-center gap-3 lg:gap-4 min-w-0"] do %>

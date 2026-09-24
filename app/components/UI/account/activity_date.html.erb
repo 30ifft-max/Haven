@@ -1,16 +1,8 @@
-<%= tag.div id: id, data: { bulk_select_target: "group" }, class: "bg-container-inset rounded-xl p-1 w-full" do %>
+<%= tag.div id: id, class: "w-full border-b border-secondary last:border-b-0" do %>
   <details class="group">
     <summary>
-      <div class="py-2 px-4 flex items-center justify-between font-medium text-xs text-secondary">
-        <div class="flex pl-0.5 items-center gap-4">
-          <%= check_box_tag "#{date}_entries_selection",
-                          class: ["checkbox checkbox--light hidden lg:block", "lg:hidden": entries.size == 0],
-                          id: "selection_entry_#{date}",
-                          data: {
-                            action: "bulk-select#toggleGroupSelection",
-                            checkbox_toggle_target: "selectionEntry"
-                          } %>
-
+      <div class="bg-container-inset py-2 px-4 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center font-medium text-sm text-secondary">
+        <div class="flex min-w-0 pl-0.5 items-center gap-4">
           <p class="uppercase space-x-1.5">
             <%= tag.span I18n.l(date, format: :long) %>
             <span>&middot;</span>
@@ -18,17 +10,12 @@
           </p>
         </div>
 
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            <span class="font-medium privacy-sensitive"><%= end_balance_money.format %></span>
-            <%= render DS::Tooltip.new(text: t(".balance_tooltip"), placement: "left", size: "sm", as: :span) %>
-          </div>
-          <%= helpers.icon "chevron-down", class: "group-open:rotate-180" %>
-        </div>
+        <%= helpers.icon "chevron-down", class: "justify-self-center transition-transform group-open:rotate-180" %>
+        <span class="justify-self-end font-medium privacy-sensitive"><%= end_balance_money.format %></span>
       </div>
     </summary>
 
-    <div class="p-4">
+    <div class="px-5 py-4 bg-container-inset border-t border-secondary">
       <% if balance %>
         <%= render UI::Account::BalanceReconciliation.new(balance: balance, account: account) %>
       <% else %>
@@ -37,7 +24,7 @@
     </div>
   </details>
 
-  <div class="bg-container shadow-border-xs rounded-lg">
+  <div class="[&>turbo-frame:not(:last-child)>turbo-frame>div]:border-b-[0.5px] [&>turbo-frame:not(:last-child)>turbo-frame>div]:border-[var(--color-container-inset)]">
     <% entries.each do |entry| %>
       <%= render entry, view_ctx: "account" %>
     <% end %>

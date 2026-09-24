@@ -87,6 +87,7 @@ class TransfersController < ApplicationController
       update_transfer_status
       update_transfer_fees_and_amount
       update_transfer_details unless transfer_update_params[:status] == "rejected"
+      update_transfer_sort_time if transfer_update_params[:sort_time].present?
     end
 
     respond_to do |format|
@@ -209,7 +210,7 @@ class TransfersController < ApplicationController
     end
 
     def transfer_update_params
-      params.require(:transfer).permit(:name, :classification, :notes, :status, :category_id, :amount, :source_fee_amount, :destination_fee_amount)
+      params.require(:transfer).permit(:name, :classification, :notes, :status, :category_id, :amount, :source_fee_amount, :destination_fee_amount, :sort_time)
     end
 
     def update_transfer_status
@@ -232,7 +233,18 @@ class TransfersController < ApplicationController
     end
 
     def shared_transfer_attributes_changed?
-      transfer_update_params[:name].present? || transfer_update_params[:classification].present?
+      transfer_update_params[:name].present? || transfer_update_params[:classification].present? || transfer_update_params[:sort_time].present?
+    end
+
+    def update_transfer_sort_time
+      sort_time = transfer_update_params[:sort_time]
+      unless sort_time.match?(/\A(?:[01]\d|2[0-3]):[0-5]\d\z/)
+        raise ActionController::BadRequest, "Invalid sort time"
+      end
+
+      entries = [ @transfer.outflow_transaction.entry, @transfer.inflow_transaction.entry ] +
+                @transfer.fee_transactions.includes(:entry).map(&:entry)
+      entries.each { |entry| entry.update!(sort_time: sort_time) }
     end
 
     def update_transfer_fees_and_amount
@@ -301,6 +313,7 @@ class TransfersController < ApplicationController
             amount: new_fee,
             currency: account.currency,
             date: @transfer.date,
+            sort_time: @transfer.outflow_transaction.entry.sort_time,
             name: name,
           )
         )

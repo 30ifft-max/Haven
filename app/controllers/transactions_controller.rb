@@ -23,7 +23,15 @@ class TransactionsController < ApplicationController
     @search = Transaction::Search.new(Current.family, filters: @q, accessible_account_ids: @accessible_account_ids)
 
     base_scope = @search.transactions_scope
-                       .reverse_chronological
+                       .reorder(
+                         Arel.sql(<<~SQL.squish)
+                           entries.date DESC,
+                           entries.sort_time DESC,
+                           CASE WHEN entries.entryable_type = 'Valuation' THEN 1 ELSE 0 END DESC,
+                           entries.created_at DESC,
+                           entries.id DESC
+                         SQL
+                       )
                        .includes(
                          { entry: :account },
                          :category, :merchant, :tags,

@@ -476,6 +476,45 @@ end
     assert_equal expected_entry_ids, page_1_entry_ids + page_2_entry_ids
   end
 
+  test "index orders transactions by time from latest to earliest within the date and keeps transfer row position" do
+    family = families(:empty)
+    sign_in users(:empty)
+    family.accounts.each { |account| account.entries.delete_all }
+
+    from_account = family.accounts.create!(name: "Morning source", balance: 0, currency: "USD", accountable: Depository.new)
+    to_account = family.accounts.create!(name: "Morning destination", balance: 0, currency: "USD", accountable: Depository.new)
+    date = Date.new(2026, 5, 5)
+
+    expenses = [ 20, 30 ].map do |amount|
+      create_transaction(
+        account: from_account,
+        name: "Morning expense #{amount}",
+        amount: amount,
+        date: date,
+        sort_time: "05:00"
+      )
+    end
+    transfer = Transfer::Creator.new(
+      family: family,
+      source_account_id: from_account.id,
+      destination_account_id: to_account.id,
+      date: date,
+      sort_time: "09:00",
+      amount: 100
+    ).create
+
+    get transactions_url(per_page: 30)
+
+    assert_response :success
+    rendered_ids = rendered_entry_ids
+    transfer_index = rendered_ids.index(transfer.outflow_transaction.entry.id.to_s)
+    expense_indices = expenses.map { |expense| rendered_ids.index(expense.id.to_s) }
+
+    assert expense_indices.all?, "Expected both morning expenses to render"
+    assert_operator transfer_index, :<, expense_indices.min
+    assert_not_includes rendered_ids, transfer.inflow_transaction.entry.id.to_s
+  end
+
   test "calls Transaction::Search totals method with correct search parameters" do
     family = families(:empty)
     sign_in users(:empty)
