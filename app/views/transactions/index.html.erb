@@ -1,5 +1,5 @@
 <div class="haven-transaction-log relative pb-6 lg:pb-12 flex flex-col [&_turbo-frame:focus]:outline-none [&_turbo-frame:focus]:ring-0 [&_turbo-frame:focus-visible]:outline-none [&_turbo-frame:focus-visible]:ring-0" data-controller="overview-toggle checkbox-toggle">
-  <header class="absolute right-0 top-0 z-10 flex items-center text-primary font-medium">
+  <header class="absolute right-0 top-0 flex items-center text-primary font-medium">
     <div class="flex items-center gap-2">
         <%= render DS::Menu.new do |menu| %>
           <% menu.with_item(variant: "link", text: t(".new_rule"), href: new_rule_path(resource_type: "transaction"), icon: "plus", data: { turbo_frame: :modal }) %>

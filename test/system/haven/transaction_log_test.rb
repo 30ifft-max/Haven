@@ -89,4 +89,22 @@ class Haven::TransactionLogSystemTest < ApplicationSystemTestCase
     assert_operator find("#transaction-summary").rect.y, :>, before
     save_screenshot Rails.root.join("tmp/screenshots/haven-transaction-log-desktop.png")
   end
+
+  test "transaction log has category before merchant in the HTML while account activity keeps its order" do
+    cells = page.evaluate_script(<<~JS)
+      Array.from(document.querySelector('##{dom_id(@usd)} .haven-transaction-row').children)
+        .map(cell => cell.textContent.trim())
+    JS
+    assert_includes cells[2], "Long category name"
+    assert_includes cells[3], "Long merchant name for layout checks"
+
+    visit account_path(@usd.account, tab: "transactions")
+    assert_selector "##{dom_id(@usd)} .haven-transaction-row"
+    cells = page.evaluate_script(<<~JS)
+      Array.from(document.querySelector('##{dom_id(@usd)} .haven-transaction-row').children)
+        .map(cell => cell.textContent.trim())
+    JS
+    assert_includes cells[2], "Long merchant name for layout checks"
+    assert_includes cells[3], "Long category name"
+  end
 end

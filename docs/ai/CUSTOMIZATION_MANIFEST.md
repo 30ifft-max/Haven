@@ -89,10 +89,20 @@ Do not perform this audit opportunistically during unrelated feature work.
   - `app/views/transactions/{_transaction,_split_parent_row}.html.erb` and
     `_status.html.erb`: row class hooks, Haven transaction-log category rendering,
     and a scoped status marker. The global transaction log shows provider-source
-    provenance while account activity retains the protection lock. The transaction log
-  places cells as name/status/category/merchant/account/amount and does not
-  show Sure's investment-activity badge there; account activity keeps it.
-    Scoped grid widths apply inside the global transaction log only.
+    provenance while account activity retains the protection lock. The transaction
+    log emits cells in name/status/category/merchant/account/amount DOM order,
+    so its sequence does not depend on a compiled CSS reorder. Account activity
+    retains Sure's merchant-before-category order and investment-activity badge.
+    Scoped grid widths apply inside the global transaction log only. Desktop
+    widths and gaps are centralized as CSS custom properties: text tracks shrink
+    with available space, status reserves 6rem, amount reserves 10rem, and account
+    has an extra 0.5rem inset after the right-aligned merchant. No wide-viewport
+    rule restores rigid text minima when sidebars consume the available width.
+  - `app/views/entries/_entry_group.html.erb`: date span hook for scoped 600
+    weight; count and daily totals retain 500. Haven styling uses Geist Mono
+    for amounts and dates, with tighter row-amount spacing. Split parent rows
+    show the same amount and currency-code format as transaction rows.
+    Account activity typography is unchanged.
   - `app/views/transactions/searches/_form.html.erb`: single responsive search
     field, desktop expanded/mobile folded when empty; retains blur submission.
   - `app/views/transactions/searches/filters/_amount_filter.html.erb`: native

@@ -1,15 +1,47 @@
-/* The global log is a cashflow history. Its desktop columns have explicit
-   order and stable minima; account activity views keep Sure's original grid. */
+/* Use the bundled mono face for financial figures and date labels. */
+.haven-transaction-log .haven-transaction-row > div:last-child .privacy-sensitive > span:first-child,
+.haven-transaction-log [id^="entry-group-"][id$="-totals"] {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.haven-transaction-log .haven-transaction-row > div:last-child .privacy-sensitive > span:first-child {
+  letter-spacing: -0.08em;
+}
+
+.haven-transaction-log .haven-entry-group-date {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.haven-transaction-log .haven-transaction-merchant-cell {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* Desktop layout parameters. Text columns may shrink to zero so sidebar
+   space never forces the amount track outside the row. */
+.haven-transaction-log {
+  --haven-log-description: minmax(0, 1.8fr);
+  --haven-log-status: 6rem;
+  --haven-log-category: minmax(0, 0.9fr);
+  --haven-log-merchant: minmax(0, 1fr);
+  --haven-log-account: minmax(0, 1.2fr);
+  --haven-log-amount: 10rem;
+  --haven-log-gap: clamp(0.5rem, 1vw, 1rem);
+  --haven-log-account-inset: 0.5rem;
+}
+
 @media (min-width: 1024px) {
   .haven-transaction-log .haven-transaction-row {
     grid-template-columns:
-      minmax(0, 1.5fr) /* Transaction name and supporting details */
-      minmax(2.5rem, 0.3fr) /* Status icons */
-      minmax(0, 0.8fr) /* Category */
-      minmax(0, 1fr) /* Merchant */
-      minmax(0, 1fr) /* Account */
-      10rem; /* Amount and currency: fixed minimum, does not shrink */
-    column-gap: 0.375rem;
+      var(--haven-log-description)
+      var(--haven-log-status)
+      var(--haven-log-category)
+      var(--haven-log-merchant)
+      var(--haven-log-account)
+      var(--haven-log-amount);
+    column-gap: var(--haven-log-gap);
   }
 
   .haven-transaction-log .haven-transaction-row > div {
@@ -17,70 +49,34 @@
     grid-row: 1;
   }
 
-  /* The template keeps Sure's DOM order. Place cells into the cashflow log's
-     reading order without changing account activity screens. */
+  /* Match the HTML order. Account activity uses its own upstream layout. */
   .haven-transaction-log .haven-transaction-row > div:nth-child(1) { grid-column: 1; }
   .haven-transaction-log .haven-transaction-row > div:nth-child(2) { grid-column: 2; }
-  .haven-transaction-log .haven-transaction-row > div:nth-child(3) { grid-column: 4; }
-  .haven-transaction-log .haven-transaction-row > div:nth-child(4) { grid-column: 3; }
+  .haven-transaction-log .haven-transaction-row > div:nth-child(3) { grid-column: 3; }
+  .haven-transaction-log .haven-transaction-row > div:nth-child(4) { grid-column: 4; }
   .haven-transaction-log .haven-transaction-row > div:nth-child(5) { grid-column: 5; }
   .haven-transaction-log .haven-transaction-row > div:nth-child(6) { grid-column: 6; }
 
-  /* Align the visible content with the reading emphasis of each column. */
-  .haven-transaction-log .haven-transaction-row > div:nth-child(1) {
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .haven-transaction-log .haven-transaction-row > div:nth-child(2) {
-    justify-content: flex-end;
-    text-align: right;
-  }
-
-  .haven-transaction-log .haven-transaction-row > div:nth-child(3) {
-    justify-content: flex-end;
-    text-align: right;
-  }
-
-  .haven-transaction-log .haven-transaction-row > div:nth-child(4) {
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .haven-transaction-log .haven-transaction-row > div:nth-child(2) {
-    justify-content: flex-end;
-    text-align: right;
-  }
-
+  .haven-transaction-log .haven-transaction-row > div:nth-child(1),
+  .haven-transaction-log .haven-transaction-row > div:nth-child(3),
   .haven-transaction-log .haven-transaction-row > div:nth-child(5) {
     justify-content: flex-start;
     text-align: left;
   }
 
-  .haven-transaction-log .haven-transaction-row > div:nth-child(5) [data-DS--popover-target="button"] > .hidden[class~="lg:flex"],
-  .haven-transaction-log .haven-transaction-row > div:nth-child(5) > .hidden[class~="lg:flex"] {
-    justify-content: flex-start;
-  }
-
+  .haven-transaction-log .haven-transaction-row > div:nth-child(2),
+  .haven-transaction-log .haven-transaction-row > div:nth-child(4),
   .haven-transaction-log .haven-transaction-row > div:nth-child(6) {
     justify-content: flex-end;
     text-align: right;
   }
 
+  /* Separate the right-aligned merchant from the left-aligned account. */
+  .haven-transaction-log .haven-transaction-row > div:nth-child(5) {
+    padding-left: var(--haven-log-account-inset);
+  }
+
   .haven-transaction-log .haven-transaction-row > div:first-child {
     padding-right: 0;
-  }
-}
-
-/* Restore the preferred reading widths when the viewport has room. */
-@media (min-width: 1440px) {
-  .haven-transaction-log .haven-transaction-row {
-    grid-template-columns:
-      minmax(15rem, 1.5fr)
-      minmax(4rem, 0.3fr)
-      minmax(8rem, 0.8fr)
-      minmax(10rem, 1fr)
-      minmax(11rem, 1fr)
-      10rem;
   }
 }
