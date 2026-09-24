@@ -2,6 +2,7 @@ en:
   haven:
     transactions:
       search: Search
+      search_hint: Search descriptions or notes
       currency_filter:
         limit: Limit to one currency
         currency: Currency

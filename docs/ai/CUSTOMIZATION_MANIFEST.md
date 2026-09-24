@@ -75,7 +75,7 @@ Do not perform this audit opportunistically during unrelated feature work.
 - Product purpose: time-ordered spending journal with a compact, headerless list;
   desktop search, optional original-currency filtering and stable transfer pagination.
 - Haven-owned code: `app/models/haven/transaction_list.rb`,
-  `app/models/haven/transaction_search.rb`, `app/assets/tailwind/haven/transactions.css`,
+  `app/models/haven/transaction_search.rb`, `app/assets/stylesheets/haven/transactions.css`,
   `app/javascript/controllers/haven/{currency_filter,transaction_search}_controller.js`,
   `app/views/haven/transactions/_currency_filter.html.erb`,
   `config/locales/haven.transactions.*.yml`.
@@ -99,9 +99,10 @@ Do not perform this audit opportunistically during unrelated feature work.
     has an extra 0.5rem inset after the right-aligned merchant. No wide-viewport
     rule restores rigid text minima when sidebars consume the available width.
   - `app/views/entries/_entry_group.html.erb`: date span hook for scoped 600
-    weight; count and daily totals retain 500. Haven styling uses Geist Mono
-    for amounts and dates, with tighter row-amount spacing. Split parent rows
-    show the same amount and currency-code format as transaction rows.
+    weight; count and daily totals retain 500. Haven styling uses Geist for
+    dates and daily totals, and Geist Mono for transaction amounts with tighter
+    row-amount spacing. Split parent rows show the same amount and currency-code
+    format as transaction rows.
     Account activity typography is unchanged.
   - `app/views/transactions/searches/_form.html.erb`: single responsive search
     field, desktop expanded/mobile folded when empty; retains blur submission.
@@ -109,7 +110,11 @@ Do not perform this audit opportunistically during unrelated feature work.
     exclusive radio controls and a currency partial.
   - `app/javascript/controllers/transaction_filter_menu_controller.js`: removing
     the selected currency condition also disables its selector.
-  - `app/assets/tailwind/application.css`: imports the isolated stylesheet.
+  - `app/views/layouts/shared/_head.html.erb`: loads the isolated plain CSS
+    asset after Tailwind, with digest-based caching and Turbo reload tracking.
+    Haven layout rules bypass Tailwind incremental compilation: an existing
+    watcher was reproduced overwriting a correct one-off build with output
+    missing all Haven rules when a new template utility was introduced.
 - Sure-compatible accompanying fix: `app/helpers/transactions_helper.rb` and
   `app/views/transactions/searches/_date_menu.html.erb` use inclusive 7/14/30-day
   ranges beginning 6/13/29 days ago. Button matching and query bounds agree.

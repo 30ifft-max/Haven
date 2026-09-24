@@ -16,7 +16,7 @@
           <span><%= t("haven.transactions.search") %></span>
         </summary>
         <div class="haven-transaction-search-input relative hidden group-open:block md:block">
-          <%= form.text_field :search, value: @q[:search], placeholder: t("haven.transactions.search"), aria: { label: t("haven.transactions.search") }, class: "form-field__input w-full rounded-lg border border-secondary bg-surface-inset px-3 py-2 pr-8", "data-auto-submit-form-target": "auto" %>
+          <%= form.text_field :search, value: @q[:search], placeholder: t("haven.transactions.search_hint"), aria: { label: t("haven.transactions.search") }, class: "form-field__input w-full rounded-lg border border-secondary bg-surface-inset px-3 py-2 pr-8", "data-auto-submit-form-target": "auto" %>
           <% if @q[:search].present? %>
             <%= button_tag "×", type: "submit", name: "q[search]", value: "", class: "absolute right-2 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded-full text-secondary hover:bg-surface-hover", aria: { label: t("transactions.searches.form.clear_search", default: "Clear search") } %>
           <% end %>

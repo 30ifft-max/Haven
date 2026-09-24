@@ -1,6 +1,5 @@
-/* Use the bundled mono face for financial figures and date labels. */
-.haven-transaction-log .haven-transaction-row > div:last-child .privacy-sensitive > span:first-child,
-.haven-transaction-log [id^="entry-group-"][id$="-totals"] {
+/* Keep transaction amounts in Geist Mono. */
+.haven-transaction-log .haven-transaction-row > div:last-child .privacy-sensitive > span:first-child {
   font-family: var(--font-mono);
   font-weight: 500;
 }
@@ -10,8 +9,17 @@
 }
 
 .haven-transaction-log .haven-entry-group-date {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-weight: 600;
+  font-variant-numeric: normal;
+  font-feature-settings: normal;
+}
+
+.haven-transaction-log [id^="entry-group-"][id$="-totals"] {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-variant-numeric: normal;
+  font-feature-settings: normal;
 }
 
 .haven-transaction-log .haven-transaction-merchant-cell {

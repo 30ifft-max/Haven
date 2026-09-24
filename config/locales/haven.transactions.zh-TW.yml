@@ -2,6 +2,7 @@ zh-TW:
   haven:
     transactions:
       search: 搜尋
+      search_hint: 搜尋描述或備註
       currency_filter:
         limit: 限定幣別
         currency: 幣別
