@@ -50,6 +50,9 @@ en:
       source_fee: Source fee
       destination_fee: Destination fee
       category: Category
+      classification: Classification
+      asset_transfer: Asset transfer
+      liability_repayment: Liability repayment
       uncategorized: Uncategorized
     update:
       success: Transfer updated

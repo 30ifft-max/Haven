@@ -7,6 +7,7 @@ class Transfer < ApplicationRecord
   attr_accessor :source_fee_amount, :destination_fee_amount, :tag_ids
 
   enum :status, { pending: "pending", confirmed: "confirmed" }
+  enum :classification, { asset_transfer: "asset_transfer", liability_repayment: "liability_repayment" }, prefix: true
 
   validates :inflow_transaction_id, uniqueness: true
   validates :outflow_transaction_id, uniqueness: true
@@ -61,16 +62,25 @@ class Transfer < ApplicationRecord
   end
 
   def name
-    acc = to_account
-    if payment?
-      acc ? "Payment to #{acc.name}" : "Payment"
-    else
-      acc ? "Transfer to #{acc.name}" : "Transfer"
-    end
+    outflow_transaction&.entry&.name || inflow_transaction&.entry&.name || "Transfer"
   end
 
   def payment?
     to_account&.liability?
+  end
+
+  # Legacy transfers have no persisted classification. Retain their existing
+  # presentation until a user explicitly selects one in the transfer drawer.
+  def effective_classification
+    classification || (payment? ? "liability_repayment" : "asset_transfer")
+  end
+
+  def display_tags
+    [ outflow_transaction, inflow_transaction ].compact.flat_map(&:tags).uniq
+  end
+
+  def display_notes
+    [ notes, outflow_transaction&.entry&.notes, inflow_transaction&.entry&.notes ].compact_blank.uniq
   end
 
   def loan_payment?

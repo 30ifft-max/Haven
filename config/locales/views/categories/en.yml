@@ -61,6 +61,8 @@ en:
     virtual:
       transfer: Transfer
       payment: Payment
+      asset_transfer: Asset transfer
+      liability_repayment: Liability repayment
       trade: Trade
   category:
     dropdowns:

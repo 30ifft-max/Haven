@@ -45,6 +45,8 @@ zh-CN:
     virtual:
       transfer: 转账
       payment: 付款
+      asset_transfer: 资产划转
+      liability_repayment: 负债还款
       trade: 交易
     merge:
       title: 合并分类

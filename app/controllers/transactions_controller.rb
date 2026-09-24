@@ -35,13 +35,14 @@ class TransactionsController < ApplicationController
                          #   for the category menu on the same row
                          {
                            transfer_as_outflow: {
-                             inflow_transaction: { entry: :account }
+                             outflow_transaction: [ :tags, { entry: :account } ],
+                             inflow_transaction: [ :tags, { entry: :account } ]
                            }
                          },
                          {
                            transfer_as_inflow: {
-                             inflow_transaction: { entry: :account },
-                             outflow_transaction: { entry: :account }
+                             inflow_transaction: [ :tags, { entry: :account } ],
+                             outflow_transaction: [ :tags, { entry: :account } ]
                            }
                          }
                        )

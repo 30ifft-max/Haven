@@ -28,6 +28,27 @@ class TransactionCategorySelectTest < ApplicationSystemTestCase
     assert Category.exists?(name: "Inline Test Category")
   end
 
+  test "category search follows the account field in the Tab order and menu escapes dialog clipping" do
+    visit new_transaction_url
+
+    account = find("#account_id_trigger")
+    account.send_keys(:tab)
+    assert_selector "#account_id_trigger[aria-expanded='true']"
+
+    account.send_keys(:tab)
+    amount = find("input[type='number'][placeholder='100']")
+    assert_equal amount[:id], page.evaluate_script("document.activeElement.id")
+    amount.send_keys(:tab)
+
+    assert_equal "category_id_trigger", page.evaluate_script("document.activeElement.id")
+    assert_selector "#category_id_trigger[aria-expanded='true']"
+    assert_selector "[data-category-select-target='search']", focused: true
+
+    menu = find("[data-category-select-target='menu']")
+    assert_equal "fixed", menu.evaluate_script("getComputedStyle(this).position")
+    assert_operator menu.evaluate_script("this.getBoundingClientRect().bottom"), :<=, page.evaluate_script("window.innerHeight")
+  end
+
   test "can clear a category from an existing transaction" do
     transaction = transactions(:one)
     transaction.update!(category: categories(:food_and_drink))

@@ -25,6 +25,38 @@ class TransfersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "can edit a transfer name for both sides" do
+    post transfers_url, params: {
+      transfer: {
+        from_account_id: accounts(:depository).id,
+        to_account_id: accounts(:credit_card).id,
+        date: Date.current,
+        amount: 100
+      }
+    }
+
+    transfer = Transfer.order(created_at: :desc).first
+
+    patch transfer_url(transfer), params: { transfer: { name: "March credit card payment" } }
+
+    assert_redirected_to transactions_url
+    assert_equal "March credit card payment", transfer.outflow_transaction.entry.reload.name
+    assert_equal "March credit card payment", transfer.inflow_transaction.entry.reload.name
+  end
+
+  test "can classify a transfer without changing its financial kind" do
+    transfer = transfers(:one)
+    original_outflow_kind = transfer.outflow_transaction.kind
+    original_inflow_kind = transfer.inflow_transaction.kind
+
+    patch transfer_url(transfer), params: { transfer: { classification: "asset_transfer" } }
+
+    assert_redirected_to transactions_url
+    assert_equal "asset_transfer", transfer.reload.classification
+    assert_equal original_outflow_kind, transfer.outflow_transaction.reload.kind
+    assert_equal original_inflow_kind, transfer.inflow_transaction.reload.kind
+  end
+
   test "can create transfer with custom exchange rate" do
     usd_account = accounts(:depository)
     eur_account = users(:family_admin).family.accounts.create!(

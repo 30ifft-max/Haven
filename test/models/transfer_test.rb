@@ -125,6 +125,25 @@ class TransferTest < ActiveSupport::TestCase
     assert_equal "funds_movement", Transfer.kind_for_account(accounts(:depository))
   end
 
+  test "uses the persisted classification when present" do
+    transfer = transfers(:one)
+    transfer.update!(classification: "asset_transfer")
+
+    assert_equal "asset_transfer", transfer.effective_classification
+  end
+
+  test "aggregates tags and notes from both transfer sides" do
+    transfer = transfers(:one)
+    transfer.update!(notes: "Shared transfer note")
+    transfer.outflow_transaction.update!(tag_ids: [ tags(:one).id ])
+    transfer.inflow_transaction.update!(tag_ids: [ tags(:two).id ])
+    transfer.outflow_transaction.entry.update!(notes: "Outflow note")
+    transfer.inflow_transaction.entry.update!(notes: "Inflow note")
+
+    assert_equal [ "Emergency fund", "Trips" ], transfer.display_tags.map(&:name).sort
+    assert_equal [ "Shared transfer note", "Outflow note", "Inflow note" ], transfer.display_notes
+  end
+
   test "has_source_fee? returns true when source fee present" do
     transfer = transfers(:one)
     entry = accounts(:depository).entries.create!(name: "Fee", date: Date.current, amount: 5, currency: "USD", entryable: Transaction.new(kind: "standard"))

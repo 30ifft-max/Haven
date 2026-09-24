@@ -345,6 +345,19 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".split-group > div.opacity-50 p.privacy-sensitive", count: 1
   end
 
+  test "split parent row hides the notes icon when its note is blank" do
+    entry = create_transaction(account: accounts(:depository), amount: 100, name: "Split parent without note", notes: " ")
+    entry.split!([
+      { name: "Part 1", amount: 60, category_id: nil },
+      { name: "Part 2", amount: 40, category_id: nil }
+    ])
+
+    get transactions_url
+
+    assert_response :success
+    assert_select "##{dom_id(entry, 'notes-tooltip')}", count: 0
+  end
+
   test "can paginate" do
   family = families(:empty)
   sign_in users(:empty)

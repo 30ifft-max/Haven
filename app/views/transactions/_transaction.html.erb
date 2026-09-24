@@ -112,7 +112,7 @@
                 <div class="text-secondary text-xs font-normal <%= "hidden" if transaction.transfer? %>">
                   <% if transaction.transfer? %>
                     <span class="text-secondary">
-                      <%= transaction.loan_payment? ? t("transactions.show.loan_payment") : t("transactions.show.transfer") %> •
+                      <%= transfer_classification_category(transaction.transfer).name %> •
                       <% if transaction.transfer.present? %>
                         <% counterpart = transaction.transfer_as_outflow.present? ? transaction.transfer.to_account : transaction.transfer.from_account %>
                         <% if counterpart.present? && @accessible_account_ids&.include?(counterpart.id) %>
@@ -155,7 +155,7 @@
       </div>
 
       <div class="hidden lg:flex min-w-0 items-center ml-0 col-span-1 text-secondary">
-        <span class="truncate"><%= transaction.transfer? ? (transaction.loan_payment? ? t("transactions.show.loan_payment") : t("transactions.show.transfer")) : (transaction.merchant&.name || "—") %></span>
+        <span class="truncate"><%= transaction.transfer? ? transfer_classification_category(transaction.transfer).name : (transaction.merchant&.name || "—") %></span>
       </div>
 
       <div class="hidden lg:flex min-w-0 items-center gap-1 col-span-2">
@@ -194,7 +194,6 @@
             ]),
             class: "privacy-sensitive w-full text-right" %>
       </div>
-
 
     </div>
   <% end %>

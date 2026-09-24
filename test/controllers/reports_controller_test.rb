@@ -500,7 +500,8 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
       assert_match(/#{Regexp.escape(Category.other_investments.name)}/, row.text)
       assert_equal 0, row.css("a").size
     end
-    assert_match(/#{Regexp.escape(I18n.t("reports.transactions_breakdown.table.entries", count: 1))}/, other_investments_rows.first.text)
+    assert_select "tr[data-category='category-other_investments'] span[aria-label=?]", I18n.t("reports.transactions_breakdown.table.entries", count: 1)
+    assert_match(/•?\s*1/, other_investments_rows.first.text)
     assert_match(/\$100\.00/, other_investments_rows.first.text)
   end
 

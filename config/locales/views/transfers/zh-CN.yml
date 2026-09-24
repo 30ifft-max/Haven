@@ -39,6 +39,9 @@ zh-CN:
       date: 日期
       amount: 金额
       category: 分类
+      classification: 分类
+      asset_transfer: 资产划转
+      liability_repayment: 负债还款
       uncategorized: 未分类
       total: 总计
       transfer_amount: 转账金额

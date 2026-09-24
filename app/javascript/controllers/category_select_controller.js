@@ -1,4 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
+import { autoUpdate } from "@floating-ui/dom";
+
+const FOCUSABLE_SELECTOR = "a[href], button:not([disabled]), input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
 
 export default class extends Controller {
   static targets = [
@@ -11,6 +14,7 @@ export default class extends Controller {
     "createForm",
     "createLabel",
     "createError",
+    "menuContent",
   ];
 
   static values = {
@@ -20,11 +24,22 @@ export default class extends Controller {
     autoSubmit: Boolean,
     createLabel: String,
     createErrorMessage: String,
+    fixedMenu: Boolean,
   };
 
   connect() {
     this.creating = false;
     this.isOpen = false;
+    this.boundOutsideClick = this.handleOutsideClick.bind(this);
+    document.addEventListener("click", this.boundOutsideClick);
+    this.resizeObserver = new ResizeObserver(() => this.updatePosition());
+    this.resizeObserver.observe(this.menuTarget);
+  }
+
+  disconnect() {
+    document.removeEventListener("click", this.boundOutsideClick);
+    this.stopAutoUpdate();
+    this.resizeObserver?.disconnect();
   }
 
   toggle(event) {
@@ -38,17 +53,22 @@ export default class extends Controller {
     this.isOpen = true;
     this.buttonTarget.setAttribute("aria-expanded", "true");
     this.menuTarget.classList.remove("hidden");
+    this.startAutoUpdate();
 
     this.searchTarget.value = "";
     this.filter();
 
-    requestAnimationFrame(() => this.searchTarget.focus());
+    requestAnimationFrame(() => {
+      this.updatePosition();
+      this.searchTarget.focus({ preventScroll: true });
+    });
   }
 
   close() {
     this.isOpen = false;
     this.buttonTarget.setAttribute("aria-expanded", "false");
     this.menuTarget.classList.add("hidden");
+    this.stopAutoUpdate();
   }
 
   filter() {
@@ -100,6 +120,31 @@ export default class extends Controller {
         this.createCategory();
       }
     }
+  }
+
+  handleButtonFocus() {
+    if (this.isOpen || !this.buttonTarget.matches(":focus-visible")) return;
+    this.open();
+  }
+
+  handleButtonKeydown(event) {
+    if (["ArrowDown", "ArrowUp", " ", "Enter"].includes(event.key)) {
+      event.preventDefault();
+      this.open();
+    }
+  }
+
+  handleMenuKeydown(event) {
+    if (event.key !== "Tab") return;
+    event.preventDefault();
+    const scope = this.element.closest("dialog") || document;
+    const focusables = Array.from(scope.querySelectorAll(FOCUSABLE_SELECTOR)).filter((el) =>
+      !el.closest("[inert]") && !this.menuTarget.contains(el) && (el.offsetParent !== null || el === document.activeElement)
+    );
+    const index = focusables.indexOf(this.buttonTarget);
+    const next = focusables[index + (event.shiftKey ? -1 : 1)];
+    this.close();
+    next?.focus();
   }
 
   selectCategory(event) {
@@ -210,9 +255,43 @@ export default class extends Controller {
   }
 
   handleOutsideClick(event) {
-    if (this.isOpen && !this.element.contains(event.target)) {
+    if (this.isOpen && !this.element.contains(event.target) && !this.menuTarget.contains(event.target)) {
       this.close();
     }
+  }
+
+  startAutoUpdate() {
+    if (!this.cleanupPosition) {
+      this.cleanupPosition = autoUpdate(this.buttonTarget, this.menuTarget, () => this.updatePosition());
+    }
+  }
+
+  stopAutoUpdate() {
+    this.cleanupPosition?.();
+    this.cleanupPosition = null;
+  }
+
+  updatePosition() {
+    if (!this.isOpen || !this.fixedMenuValue) return;
+    const rect = this.buttonTarget.getBoundingClientRect();
+    const padding = 12;
+    const width = Math.min(rect.width, window.innerWidth - padding * 2);
+    const below = window.innerHeight - rect.bottom - padding;
+    const above = rect.top - padding;
+    const fullHeight = this.menuTarget.scrollHeight;
+    const openUp = below < fullHeight && above > below;
+    const available = Math.max(0, (openUp ? above : below) - 6);
+
+    Object.assign(this.menuTarget.style, {
+      position: "fixed",
+      left: `${Math.min(Math.max(padding, rect.left), window.innerWidth - width - padding)}px`,
+      right: "auto",
+      top: openUp ? "auto" : `${rect.bottom + 6}px`,
+      bottom: openUp ? `${window.innerHeight - rect.top + 6}px` : "auto",
+      width: `${width}px`,
+      maxHeight: `${available}px`,
+    });
+    this.menuContentTarget.style.maxHeight = `${Math.max(0, available - 54)}px`;
   }
 
   clearCreateError() {

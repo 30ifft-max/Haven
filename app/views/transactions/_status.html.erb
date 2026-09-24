@@ -1,11 +1,14 @@
 <%# locals: (entry:, transaction:, show_split: true) %>
 <div class="hidden lg:flex w-full items-center justify-end gap-1 whitespace-nowrap pr-1 text-secondary">
+  <% transfer = transaction.transfer %>
+  <% display_tags = transfer ? transfer.display_tags : transaction.tags %>
+  <% display_notes = transfer ? transfer.display_notes : [entry.notes].compact_blank %>
   <div class="order-2 flex size-6 shrink-0 items-center justify-center">
-    <% if transaction.tags.any? %>
+    <% if display_tags.any? %>
       <% tags_tooltip_id = dom_id(entry, "tags-tooltip") %>
       <span data-controller="DS--tooltip" data-DS--tooltip-placement-value="left" data-DS--tooltip-offset-value="10" class="inline-flex">
         <button type="button" class="inline-flex size-5 items-center justify-center rounded focus-ring" aria-describedby="<%= tags_tooltip_id %>">
-        <% tags = transaction.tags.first(4) %>
+        <% tags = display_tags.first(4) %>
         <% if tags.one? %>
           <span class="flex items-center justify-center">
             <span class="size-1.5 rounded-full" style="background-color: <%= tags.first.color.presence || "var(--color-primary)" %>"></span>
@@ -33,7 +36,7 @@
         </button>
         <div role="tooltip" id="<%= tags_tooltip_id %>" data-DS--tooltip-target="tooltip" class="hidden absolute z-50 rounded-xl bg-surface px-3 py-2 text-sm shadow-lg">
           <div class="relative space-y-1.5 font-medium text-primary">
-            <% transaction.tags.each do |tag| %>
+            <% display_tags.each do |tag| %>
               <div class="flex items-center gap-2 whitespace-nowrap">
                 <span class="size-3 shrink-0 rounded-full" style="background-color: <%= tag.color.presence || Tag::UNCATEGORIZED_COLOR %>"></span>
                 <span><%= tag.name %></span>
@@ -46,12 +49,14 @@
   </div>
 
   <div class="order-3 mr-2 flex size-6 shrink-0 items-center justify-center">
-    <% if entry.notes.present? %>
+    <% if display_notes.any? %>
       <% notes_tooltip_id = dom_id(entry, "notes-tooltip") %>
       <span data-controller="DS--tooltip" data-DS--tooltip-placement-value="top" data-DS--tooltip-offset-value="10" class="inline-flex">
         <button type="button" class="inline-flex size-5 items-center justify-center rounded focus-ring" aria-describedby="<%= notes_tooltip_id %>"><%= icon "message-square-text", size: "sm", color: "current" %></button>
         <div role="tooltip" id="<%= notes_tooltip_id %>" data-DS--tooltip-target="tooltip" class="hidden absolute z-50 max-w-[20rem] rounded-xl bg-surface px-3 py-2 text-sm shadow-lg">
-          <div class="relative whitespace-pre-wrap font-medium text-primary"><%= entry.notes.truncate(200) %></div>
+          <div class="relative flex flex-col gap-1.5 font-medium text-primary"><% display_notes.each do |note| -%>
+            <div class="whitespace-pre-wrap"><%= note.truncate(200) %></div><% end -%>
+          </div>
         </div>
       </span>
     <% end %>

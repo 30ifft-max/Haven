@@ -31,7 +31,7 @@ class Transfer::CreatorTest < ActiveSupport::TestCase
     assert outflow.transfer?, "investment_contribution should be recognized as a transfer"
     assert_equal @amount, outflow.entry.amount
     assert_equal @source_account.currency, outflow.entry.currency
-    assert_equal "Transfer to #{@destination_account.name}", outflow.entry.name
+    assert_equal "Transfer from #{@source_account.name}", outflow.entry.name
     assert_equal @investment_category, outflow.category, "Should auto-assign Investment Contributions category"
 
     # Verify inflow transaction (always funds_movement)
@@ -40,7 +40,7 @@ class Transfer::CreatorTest < ActiveSupport::TestCase
     assert inflow.transfer?, "funds_movement should be recognized as a transfer"
     assert_equal(@amount * -1, inflow.entry.amount)
     assert_equal @destination_account.currency, inflow.entry.currency
-    assert_equal "Transfer from #{@source_account.name}", inflow.entry.name
+    assert_equal outflow.entry.name, inflow.entry.name
   end
 
   test "uses the supplied sort time for both sides of a transfer" do
@@ -107,13 +107,13 @@ class Transfer::CreatorTest < ActiveSupport::TestCase
     # Verify outflow transaction is investment_contribution (not funds_movement)
     outflow = transfer.outflow_transaction
     assert_equal "investment_contribution", outflow.kind
-    assert_equal "Transfer to #{crypto_account.name}", outflow.entry.name
+    assert_equal "Transfer from #{@source_account.name}", outflow.entry.name
     assert_equal @investment_category, outflow.category
 
     # Verify inflow transaction with currency handling
     inflow = transfer.inflow_transaction
     assert_equal "funds_movement", inflow.kind
-    assert_equal "Transfer from #{@source_account.name}", inflow.entry.name
+    assert_equal outflow.entry.name, inflow.entry.name
     assert_equal crypto_account.currency, inflow.entry.currency
   end
 
@@ -163,12 +163,12 @@ class Transfer::CreatorTest < ActiveSupport::TestCase
     # Verify outflow transaction is marked as loan payment
     outflow = transfer.outflow_transaction
     assert_equal "loan_payment", outflow.kind
-    assert_equal "Payment to #{loan_account.name}", outflow.entry.name
+    assert_equal "Payment from #{@source_account.name}", outflow.entry.name
 
     # Verify inflow transaction
     inflow = transfer.inflow_transaction
     assert_equal "funds_movement", inflow.kind
-    assert_equal "Payment from #{@source_account.name}", inflow.entry.name
+    assert_equal outflow.entry.name, inflow.entry.name
   end
 
   test "creates credit card payment" do
@@ -191,12 +191,12 @@ class Transfer::CreatorTest < ActiveSupport::TestCase
     # Verify outflow transaction is marked as payment for liability
     outflow = transfer.outflow_transaction
     assert_equal "cc_payment", outflow.kind
-    assert_equal "Payment to #{credit_card_account.name}", outflow.entry.name
+    assert_equal "Payment from #{@source_account.name}", outflow.entry.name
 
     # Verify inflow transaction
     inflow = transfer.inflow_transaction
     assert_equal "funds_movement", inflow.kind
-    assert_equal "Payment from #{@source_account.name}", inflow.entry.name
+    assert_equal outflow.entry.name, inflow.entry.name
   end
 
   test "raises error when source account ID is invalid" do

@@ -27,7 +27,8 @@ class Transfer::Creator
       inflow_transaction: inflow_transaction,
       outflow_transaction: outflow_transaction,
       status: "confirmed",
-      amount: amount
+      amount: amount,
+      classification: default_classification
     )
 
     Transfer.transaction do
@@ -60,7 +61,7 @@ class Transfer::Creator
     end
 
     def outflow_transaction
-      name = "#{name_prefix} to #{destination_account.name}"
+      name = shared_transfer_name
       kind = outflow_transaction_kind
 
       Transaction.new(
@@ -82,7 +83,7 @@ class Transfer::Creator
     end
 
     def inflow_transaction
-      name = "#{name_prefix} from #{source_account.name}"
+      name = shared_transfer_name
 
       net_inflow = inflow_converted_amount
 
@@ -168,5 +169,13 @@ class Transfer::Creator
       else
         "Transfer"
       end
+    end
+
+    def shared_transfer_name
+      "#{name_prefix} from #{source_account.name}"
+    end
+
+    def default_classification
+      destination_account.liability? ? "liability_repayment" : "asset_transfer"
     end
 end
