@@ -3,13 +3,13 @@
 @media (min-width: 1024px) {
   .haven-transaction-log .haven-transaction-row {
     grid-template-columns:
-      minmax(0, 2.5fr)  /* Transaction name */
-      minmax(0, 1.5fr)  /* Category */
-      minmax(0, 1.7fr)  /* Merchant */
-      minmax(0, 1.8fr)  /* Account */
-      6rem              /* Status icons */
-      minmax(11rem, 1.5fr); /* Amount and currency */
-    column-gap: 0.625rem;
+      minmax(0, 1.5fr) /* Transaction name and supporting details */
+      minmax(2.5rem, 0.3fr) /* Status icons */
+      minmax(0, 0.8fr) /* Category */
+      minmax(0, 1fr) /* Merchant */
+      minmax(0, 1fr) /* Account */
+      10rem; /* Amount and currency: fixed minimum, does not shrink */
+    column-gap: 0.375rem;
   }
 
   .haven-transaction-log .haven-transaction-row > div {
@@ -17,13 +17,13 @@
     grid-row: 1;
   }
 
-  /* The template keeps its upstream DOM order. Place each cell into Haven's
-     log order so account activity screens don't inherit this presentation. */
+  /* The template keeps Sure's DOM order. Place cells into the cashflow log's
+     reading order without changing account activity screens. */
   .haven-transaction-log .haven-transaction-row > div:nth-child(1) { grid-column: 1; }
-  .haven-transaction-log .haven-transaction-row > div:nth-child(2) { grid-column: 5; }
-  .haven-transaction-log .haven-transaction-row > div:nth-child(3) { grid-column: 3; }
-  .haven-transaction-log .haven-transaction-row > div:nth-child(4) { grid-column: 2; }
-  .haven-transaction-log .haven-transaction-row > div:nth-child(5) { grid-column: 4; }
+  .haven-transaction-log .haven-transaction-row > div:nth-child(2) { grid-column: 2; }
+  .haven-transaction-log .haven-transaction-row > div:nth-child(3) { grid-column: 4; }
+  .haven-transaction-log .haven-transaction-row > div:nth-child(4) { grid-column: 3; }
+  .haven-transaction-log .haven-transaction-row > div:nth-child(5) { grid-column: 5; }
   .haven-transaction-log .haven-transaction-row > div:nth-child(6) { grid-column: 6; }
 
   /* Align the visible content with the reading emphasis of each column. */
@@ -43,18 +43,23 @@
   }
 
   .haven-transaction-log .haven-transaction-row > div:nth-child(4) {
-    justify-content: flex-end;
-    text-align: right;
+    justify-content: flex-start;
+    text-align: left;
   }
 
-  .haven-transaction-log .haven-transaction-row > div:nth-child(4) [data-DS--popover-target="button"] > .hidden[class~="lg:flex"],
-  .haven-transaction-log .haven-transaction-row > div:nth-child(4) > .hidden[class~="lg:flex"] {
+  .haven-transaction-log .haven-transaction-row > div:nth-child(2) {
     justify-content: flex-end;
+    text-align: right;
   }
 
   .haven-transaction-log .haven-transaction-row > div:nth-child(5) {
     justify-content: flex-start;
     text-align: left;
+  }
+
+  .haven-transaction-log .haven-transaction-row > div:nth-child(5) [data-DS--popover-target="button"] > .hidden[class~="lg:flex"],
+  .haven-transaction-log .haven-transaction-row > div:nth-child(5) > .hidden[class~="lg:flex"] {
+    justify-content: flex-start;
   }
 
   .haven-transaction-log .haven-transaction-row > div:nth-child(6) {
@@ -64,5 +69,18 @@
 
   .haven-transaction-log .haven-transaction-row > div:first-child {
     padding-right: 0;
+  }
+}
+
+/* Restore the preferred reading widths when the viewport has room. */
+@media (min-width: 1440px) {
+  .haven-transaction-log .haven-transaction-row {
+    grid-template-columns:
+      minmax(15rem, 1.5fr)
+      minmax(4rem, 0.3fr)
+      minmax(8rem, 0.8fr)
+      minmax(10rem, 1fr)
+      minmax(11rem, 1fr)
+      10rem;
   }
 }

@@ -1,4 +1,4 @@
-<%# locals: (entry:, transaction:, show_split: true) %>
+<%# locals: (entry:, transaction:, show_split: true, show_sync_source: false, show_protection: true) %>
 <div class="hidden lg:flex w-full items-center justify-end gap-1 whitespace-nowrap pr-1 text-secondary">
   <% transfer = transaction.transfer %>
   <% display_tags = transfer ? transfer.display_tags : transaction.tags %>
@@ -63,7 +63,12 @@
   </div>
 
   <div class="order-1 flex size-6 shrink-0 items-center justify-center">
-    <% if entry.protected_from_sync? && !entry.excluded? %>
+    <% if show_sync_source && entry.cleared? %>
+      <% provider = entry.source.presence || entry.account.provider_name.presence || "provider" %>
+      <span title="<%= t("transactions.transaction.linked_with_provider", provider: provider.titleize) %>" class="inline-flex size-5 items-center justify-center text-secondary">
+        <%= icon "refresh-ccw", size: "sm" %>
+      </span>
+    <% elsif show_protection && entry.protected_from_sync? && !entry.excluded? %>
       <%= link_to entry_path(entry),
           data: { turbo_frame: "drawer", turbo_prefetch: false },
           title: t("entries.protection.tooltip"),

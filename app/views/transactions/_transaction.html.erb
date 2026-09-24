@@ -153,7 +153,11 @@
       </div>
 
       <div class="hidden lg:flex items-center gap-2 col-span-1 text-secondary">
-        <%= render "transactions/status", entry: entry, transaction: transaction %>
+        <%= render "transactions/status",
+            entry: entry,
+            transaction: transaction,
+            show_sync_source: view_ctx == "global",
+            show_protection: view_ctx != "global" %>
       </div>
 
       <div class="hidden lg:flex min-w-0 items-center ml-0 col-span-1 text-secondary">

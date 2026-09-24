@@ -86,9 +86,11 @@ Do not perform this audit opportunistically during unrelated feature work.
     the uncollapsed scope. No core model or ledger mutation.
   - `app/views/transactions/index.html.erb`: opts into scoped Haven styling,
     gives desktop search flexible width, positions overview below the toolbar.
-  - `app/views/transactions/{_transaction,_split_parent_row}.html.erb`: row class
-  hooks and Haven transaction-log category rendering. The transaction log
-  places cells as name/category/merchant/account/status/amount and does not
+  - `app/views/transactions/{_transaction,_split_parent_row}.html.erb` and
+    `_status.html.erb`: row class hooks, Haven transaction-log category rendering,
+    and a scoped status marker. The global transaction log shows provider-source
+    provenance while account activity retains the protection lock. The transaction log
+  places cells as name/status/category/merchant/account/amount and does not
   show Sure's investment-activity badge there; account activity keeps it.
     Scoped grid widths apply inside the global transaction log only.
   - `app/views/transactions/searches/_form.html.erb`: single responsive search
