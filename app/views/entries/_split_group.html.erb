@@ -1,4 +1,4 @@
-<%# locals: (split_group:) %>
+<%# locals: (split_group:, view_ctx: "global") %>
 <div class="split-group" data-controller="split-group-toggle">
   <%= render "transactions/split_parent_row", entry: split_group.parent %>
   <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-200 ease-out" data-split-group-toggle-target="children">
@@ -9,7 +9,7 @@
       <% split_group.children.each_with_index do |child_entry, index| %>
         <% if child_entry.entryable.present? %>
           <%= render partial: child_entry.entryable.to_partial_path,
-                    locals: { entry: child_entry, in_split_group: true } %>
+                    locals: { entry: child_entry, in_split_group: true, view_ctx: view_ctx } %>
           <div class="block border-b-[0.2px] border-[var(--color-container-inset)] <%= "lg:ml-[25%]" unless index == split_group.children.size - 1 %>"></div>
         <% end %>
       <% end %>

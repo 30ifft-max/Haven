@@ -83,12 +83,13 @@ Do not perform this audit opportunistically during unrelated feature work.
   - `app/controllers/transactions_controller.rb`: accepts optional currency, uses
     the derived search only with that filter, passes authorized search results
     through `Haven::TransactionList` before pagination. Original totals still use
-    the uncollapsed scope. No core model or ledger mutation.
+    the uncollapsed scope. The page keeps 30 as its default size while accepting
+    Sure's 10 and 100 options. No core model or ledger mutation.
   - `app/views/transactions/index.html.erb`: opts into scoped Haven styling,
     gives desktop search flexible width, positions overview below the toolbar.
   - `app/views/transactions/{_transaction,_split_parent_row}.html.erb` and
     `_status.html.erb`: row class hooks, Haven transaction-log category rendering,
-    and a scoped status marker. The global transaction log shows provider-source
+    a scoped status marker, and Sure's clickable-row hook. The global transaction log shows provider-source
     provenance while account activity retains the protection lock. The transaction
     log emits cells in name/status/category/merchant/account/amount DOM order,
     so its sequence does not depend on a compiled CSS reorder. Account activity
@@ -137,6 +138,7 @@ Do not perform this audit opportunistically during unrelated feature work.
 - Rollback: remove the controller/query/style/partial hooks and Haven files;
   no data rollback or migration required. Removing the currency feature should
   also stop accepting its query parameter; saved filters then ignore it.
-- Last reviewed against repository base: `d2bb6939` on 2026-09-24; no claim of
-  comparison against a separate upstream release.
+- Last reviewed against Sure `v0.7.5-alpha.11` (`01bd2542`) on 2026-09-25.
+  The synchronization decisions and migration exception are recorded in
+  `docs/ai/SURE_SYNC_STATUS.md`.
 - Product decisions and deferred work: `docs/ai/TRANSACTION_LOG_UX_BACKLOG.md`.

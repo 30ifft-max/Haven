@@ -1,12 +1,12 @@
 <%# locals: (entry:) %>
 <% transaction = entry.entryable %>
 
-<div class="haven-transaction-row group flex lg:grid lg:grid-cols-12 items-center text-sm font-medium p-3 lg:p-4 lg:py-2 text-secondary">
+<div class="haven-transaction-row group flex lg:grid lg:grid-cols-12 items-center text-sm font-medium p-3 lg:p-4 lg:py-2 text-secondary" data-controller="clickable-row" data-action="click->clickable-row#open">
   <div class="pr-4 lg:pr-10 flex items-center gap-3 lg:gap-4 col-span-3 min-w-0">
     <div class="truncate flex-shrink opacity-50">
       <%= link_to entry.name,
           entry_path(entry),
-          data: { turbo_frame: "drawer", turbo_prefetch: false },
+          data: { turbo_frame: "drawer", turbo_prefetch: false, clickable_row_target: "link" },
           class: "hover:underline" %>
     </div>
 

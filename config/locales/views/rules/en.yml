@@ -59,6 +59,7 @@ en:
       view_usage_history: View usage history
       confirm_changes: Confirm changes
     actions:
+      to_label: to
       value_placeholder: Enter a value
       types:
         set_transaction_category: Set transaction category
@@ -75,6 +76,7 @@ en:
       cost_na: "cost: N/A"
       per_transactions: per %{count} transactions
       no_llm_provider: no LLM provider configured
+      no_categorization_provider: no categorization provider configured
     update:
       success: Rule updated
     destroy:

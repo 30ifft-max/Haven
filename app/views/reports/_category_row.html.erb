@@ -7,13 +7,13 @@
   # /transactions only lists Transaction rows. Skip trade-only buckets (e.g. Other
   # Investments) so the destination is not empty relative to the report row.
   clickable = item[:has_transactions] && row_start_date.present? && row_end_date.present?
-  transactions_href = clickable ? transactions_path(q: { categories: [ item[:category_name] ], start_date: row_start_date, end_date: row_end_date }) : nil
+  transactions_href = clickable ? transactions_path(q: { categories: [ item[:category_filter_value] ], start_date: row_start_date, end_date: row_end_date }) : nil
 %>
 
 <tr data-category="category-<%= item[:category_id] %>"
     class="text-secondary text-sm <%= show_border ? "table-divider" : "" %> <%= clickable ? "group/category-row" : "" %>">
   <td colspan="2" class="py-3 px-4 lg:px-6 <%= is_sub ? "pl-7 lg:pl-9" : "" %>">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 <%= clickable ? "relative" : "" %>">
       <% if is_sub %>
         <div class="text-subdued">
           <%= icon "corner-down-right" %>

@@ -39,12 +39,14 @@ class Transactions::MergedBadgeViewTest < ActionView::TestCase
       in_split_group: true
     })
 
-    assert_includes html, "col-span-3 min-w-0"
-    assert_not_includes html, "col-span-3 min-w-0 pl-8"
+    first_cell_classes = Nokogiri::HTML.fragment(html).at_css(".haven-transaction-row > div")["class"]
+    assert_includes first_cell_classes, "col-span-3"
+    assert_includes first_cell_classes, "min-w-0"
+    assert_not_includes first_cell_classes, "pl-8"
     assert_not_includes html, "border-l border-secondary"
     assert_includes html, I18n.t("transactions.transaction.split_child_tooltip")
     assert_operator html.index(I18n.t("transactions.transaction.split_child_tooltip")), :<, html.index("Split item")
-    assert_includes html, "hidden lg:flex items-center gap-2 col-span-2 text-secondary"
+    assert_includes html, "hidden lg:flex items-center gap-2 col-span-1 text-secondary"
   end
 
   test "split parent row does not render a circular merchant or fallback icon" do
@@ -66,7 +68,7 @@ class Transactions::MergedBadgeViewTest < ActionView::TestCase
     assert_not_includes html, "w-4 shrink-0"
     assert_not_includes html, "text-xs font-normal"
     assert_not_includes html, account.name
-    assert_includes html, "hidden lg:flex items-center gap-2 col-span-2 text-secondary"
+    assert_includes html, "hidden lg:flex items-center gap-2 col-span-1 text-secondary"
     assert_includes html, "Original split note"
   end
 end

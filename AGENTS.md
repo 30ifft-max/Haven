@@ -145,6 +145,9 @@ For RED changes:
   convention explicitly changes.
 - API behavior belongs in Minitest; rswag specs are documentation-only and use
   the existing `X-Api-Key` convention.
+- Post-commit API consistency: when an API endpoint is committed, follow
+  `docs/llm-guides/api-endpoint-consistency.md` for Minitest, rswag and
+  `X-Api-Key` checks.
 - UI work checks `app/components/DS/` first, uses semantic design tokens, the
   `icon` helper and `t()` for user-visible strings.
 - Read `docs/llm-guides/adding-a-securities-provider.md` before adding a

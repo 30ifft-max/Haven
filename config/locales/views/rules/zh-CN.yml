@@ -75,6 +75,7 @@ zh-CN:
       cost_na: "费用：不可用"
       per_transactions: 每 %{count} 笔交易
       no_llm_provider: 未配置 LLM 提供商
+      no_categorization_provider: 未配置交易分类服务提供商
     update:
       success: 规则已更新
     destroy:

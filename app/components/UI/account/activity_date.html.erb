@@ -24,9 +24,19 @@
     </div>
   </details>
 
-  <div class="[&>turbo-frame:not(:last-child)>turbo-frame>div]:border-b-[0.5px] [&>turbo-frame:not(:last-child)>turbo-frame>div]:border-[var(--color-container-inset)]">
-    <% entries.each do |entry| %>
-      <%= render entry, view_ctx: "account" %>
+  <div class="bg-container shadow-border-xs rounded-lg [&>turbo-frame:not(:last-child)>turbo-frame>div]:border-b-[0.5px] [&>turbo-frame:not(:last-child)>turbo-frame>div]:border-[var(--color-container-inset)]">
+    <% if Current.user.show_split_grouped? %>
+      <% helpers.group_split_entries(entries, split_parents).each do |item| %>
+        <% if item.is_a?(EntriesHelper::SplitGroup) %>
+          <%= render "entries/split_group", split_group: item, view_ctx: "account" %>
+        <% else %>
+          <%= render item, view_ctx: "account" %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <% entries.each do |entry| %>
+        <%= render entry, view_ctx: "account" %>
+      <% end %>
     <% end %>
   </div>
 <% end %>
